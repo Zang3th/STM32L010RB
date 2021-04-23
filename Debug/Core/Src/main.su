@@ -1,8 +1,8 @@
 main.c:10:6:Error_Handler	8	static,ignoring_inline_asm
-main.c:19:6:SystemClock_Config	112	static
-main.c:60:13:MX_TIM2_Init	32	static
-main.c:90:13:PortInit	48	static
-main.c:119:6:HAL_TIM_PeriodElapsedCallback	16	static
-main.c:124:13:toggleButtonState	16	static
-main.c:136:13:fetchEvents	32	static
-main.c:152:5:main	16	static
+main.c:19:6:SystemClock_Config	88	static
+main.c:54:13:MX_TIM2_Init	32	static
+main.c:84:13:PortInit	48	static
+main.c:113:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:118:13:toggleButtonState	16	static
+main.c:130:13:fetchEvents	32	static
+main.c:146:5:main	16	static
