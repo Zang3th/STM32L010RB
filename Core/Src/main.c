@@ -1,5 +1,6 @@
 #include "main.h"
 #include <stdio.h>
+#include <string.h>
 
 /* Static PIN/PORT LOOK-UP
 	A:
@@ -22,15 +23,21 @@
 // ----- Variables ----- 
 
 TIM_HandleTypeDef htim2;
+UART_HandleTypeDef huart2;
 
 // ----- Functions ----- 
 
-void Error_Handler(void)
+void Print(char* msg)
+{
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+}
+
+void Error_Handler(char* err_msg)
 {
      __disable_irq();
     while (1)
 	{
-    	printf("Error!\n");
+    	Print(err_msg);
 	}
 }
 
@@ -50,7 +57,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler();
+    Error_Handler("HAL_RCC_OscConfig failed!");
   }
   
   //Initializes the CPU, AHB and APB buses clocks
@@ -63,8 +70,27 @@ void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
-    Error_Handler();
+    Error_Handler("HAL_RCC_ClockConfig failed!");
   }
+}
+
+static void MX_USART2_UART_Init(void)
+{
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	huart2.Init.StopBits = UART_STOPBITS_1;
+	huart2.Init.Parity = UART_PARITY_NONE;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+	huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+
+	if (HAL_UART_Init(&huart2) != HAL_OK)
+	{
+		Error_Handler("HAL_UART_Init failed!");
+	}
 }
 
 static void MX_TIM2_Init(void)
@@ -81,20 +107,20 @@ static void MX_TIM2_Init(void)
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
 	{
-		Error_Handler();
+		Error_Handler("HAL_TIM_Base_Init failed!");
 	}
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL; //Use internal clock as a clock source (at 2 MHZ, max. 32 MHZ)
 	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
 	{
-		Error_Handler();
+		Error_Handler("HAL_TIM_ConfigClockSource failed!");
 	}
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
 	{
-		Error_Handler();
+		Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
 	}
 }
 
@@ -276,7 +302,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 		if(counter < 10)	
 			counter++;
 		else
-			counter = 0;	
+			counter = 0;		
+
+		Print("Button pressed!");		
 	}
 
 	//Increment elapsed time
@@ -290,10 +318,11 @@ int main(void)
 	SystemClock_Config();
 	PortInit();
 	MX_TIM2_Init();
+	MX_USART2_UART_Init();
 	HAL_TIM_Base_Start_IT(&htim2);
 
 	while (1)
 	{
-
+		
 	}
 }
