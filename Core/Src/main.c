@@ -4,6 +4,7 @@
 // ----- Variables ----- 
 
 TIM_HandleTypeDef htim2;
+static unsigned int elapsedTime = 0;
 
 // ----- Functions ----- 
 
@@ -89,19 +90,19 @@ static void PortInit(void)
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-	//Onboard LED (PA5)
+	//Onboard-LED (PA5)
 	GPIO_InitStruct.Pin = GPIO_PIN_5;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	//Output pin to power breadboard LED (PA4)
+	//Output pin to power Breadboard-LED (PA4)
 	GPIO_InitStruct.Pin = GPIO_PIN_4;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);	//Crashed derzeit in Debug
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	//Blue push button (PC13)
 	GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -113,42 +114,24 @@ static void PortInit(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-}
-
-static void toggleButtonState(GPIO_PinState* btnState)
-{
-	if((*btnState) == GPIO_PIN_RESET)
+	//Toggle Onboard-LED => 1/2 sec. on and 1/2 sec. off
+	elapsedTime += 100;
+	if(elapsedTime == 500)
 	{
-		(*btnState) = GPIO_PIN_SET;
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		elapsedTime = 0;
 	}
-	else if((*btnState) == GPIO_PIN_SET)
-	{
-		(*btnState) = GPIO_PIN_RESET;
-	}
-}
 
-static void fetchEvents(GPIO_PinState* btnState)
-{
+	//Check if blue push button is pressed
 	GPIO_PinState state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-
 	if(state == GPIO_PIN_RESET)
 	{
-		HAL_Delay(100);
-		state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-		if(state == GPIO_PIN_RESET)
-		{
-			toggleButtonState(btnState);
-			printf("Toggle LED\n");
-		}
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
 	}
 }
 
 int main(void)
 {
-	//Variables
-	GPIO_PinState buttonState = GPIO_PIN_RESET;
-
 	//Init stuff
 	HAL_Init();
 	SystemClock_Config();
@@ -157,13 +140,12 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim2);
 
 	//Reset pins
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET); 	//Onboard-LED
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);	//Breadboard-LED
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);	//Blue push button
 
 	while (1)
 	{
-		fetchEvents(&buttonState);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, buttonState);
+
 	}
 }
