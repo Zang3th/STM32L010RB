@@ -220,6 +220,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 
 	if(elapsedTime > 10000)
 		elapsedTime -= 10000;
+	
+	//Convert ADC value into a usable pulse width
+	pulse = val / 40;
+	if(pulse > 100)
+		pulse = 100;
+	else if(pulse < 2)
+		pulse = 0;	
+
+	//Update PWM with new pulse width
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
+	sprintf(buffer, "pulse = %lu\r\n", pulse);
+	HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 100);	
 }
 
 int main(void)
