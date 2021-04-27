@@ -87,12 +87,13 @@ static void MX_TIM2_Init(void)
 {
 	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
+	TIM_OC_InitTypeDef sConfigOC = {0};
 
 	//Configure timer 2
 	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 2097; //2.097 MHZ divided by 2097 results in 1000 oscillations per second
+	htim2.Init.Prescaler = 209; //2.097 MHZ divided by 209 results in 10000 oscillations per second
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 100; //Counter goes up to 100, then starts anew. This results in 10 counter restarts per second
+	htim2.Init.Period = 100; //Counter goes up to 100, then starts anew. This results in 100 counter restarts per second
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -106,12 +107,28 @@ static void MX_TIM2_Init(void)
 		Error_Handler("HAL_TIM_ConfigClockSource failed!");
 	}
 
+	if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  	{
+   		Error_Handler("HAL_TIM_PWM_Init failed!");
+  	}
+
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
 	{
 		Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
 	}
+
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  	sConfigOC.Pulse = 50;
+  	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  	{
+   		Error_Handler("HAL_TIM_PWM_ConfigChannel failed!");
+  	}
+
+	HAL_TIM_MspPostInit(&htim2);
 }
 
 static void MX_ADC_Init(void)
@@ -182,6 +199,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	static unsigned int elapsedTime = 0;
 	static uint32_t val = 0;
 	static char buffer[15];
+	static uint32_t pulse = 0;
 		
 	//Get ADC value
 	HAL_ADC_Start(&hadc);
@@ -191,7 +209,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 100);
 	
 	//Check if 1 sec. elapsed
-	if((elapsedTime % 1000) == 0)
+	if((elapsedTime % 10000) == 0)
 	{
 		//Toggle Onboard-LED (1 sec. on and 1 sec. off)
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);			
@@ -200,8 +218,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	//Increment elapsed time
 	elapsedTime += 100;
 
-	if(elapsedTime > 1000)
-		elapsedTime -= 1000;
+	if(elapsedTime > 10000)
+		elapsedTime -= 10000;
 }
 
 int main(void)
@@ -214,6 +232,7 @@ int main(void)
 	MX_USART2_UART_Init();
 	MX_ADC_Init();
 	HAL_TIM_Base_Start_IT(&htim2);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 
 	while (1)
 	{
