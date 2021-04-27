@@ -166,7 +166,7 @@ static void MX_ADC_Init(void)
   }
 }
 
-static void PortInit(void)
+static void Port_Init(void)
 {
 	//Enable GPIO Ports Clock
 	__HAL_RCC_GPIOA_CLK_ENABLE();
@@ -205,8 +205,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 100);
 	val = HAL_ADC_GetValue(&hadc);
-	sprintf(buffer, "val = %lu\r\n", val);
-	HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 100);
+	sprintf(buffer, "value = %lu\r\n", val);
+	Print(buffer);
 	
 	//Check if 1 sec. elapsed
 	if((elapsedTime % 10000) == 0)
@@ -231,7 +231,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	//Update PWM with new pulse width
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
 	sprintf(buffer, "pulse = %lu\r\n", pulse);
-	HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 100);	
+	Print(buffer);
 }
 
 int main(void)
@@ -239,7 +239,7 @@ int main(void)
 	//Init stuff
 	HAL_Init();
 	SystemClock_Config();
-	PortInit();
+	Port_Init();
 	MX_TIM2_Init();
 	MX_USART2_UART_Init();
 	MX_ADC_Init();
