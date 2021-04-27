@@ -9,25 +9,15 @@
 		PC13: Blue push button	
 */
 
-// ----- Defines -----
-
-#define SEGMENT_A GPIOA, GPIO_PIN_8
-#define SEGMENT_B GPIOB, GPIO_PIN_10
-#define SEGMENT_C GPIOB, GPIO_PIN_4
-#define SEGMENT_D GPIOB, GPIO_PIN_5
-#define SEGMENT_E GPIOB, GPIO_PIN_3
-#define SEGMENT_F GPIOA, GPIO_PIN_10
-#define SEGMENT_G GPIOC, GPIO_PIN_7
-#define SEGMENT_DP GPIOA, GPIO_PIN_9
-
 // ----- Variables ----- 
 
 TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart2;
+ADC_HandleTypeDef hadc;
 
 // ----- Functions ----- 
 
-void Print(char* msg)
+static void Print(char* msg)
 {
 	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
 }
@@ -124,6 +114,41 @@ static void MX_TIM2_Init(void)
 	}
 }
 
+static void MX_ADC_Init(void)
+{
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  //Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  hadc.Instance = ADC1;
+  hadc.Init.OversamplingMode = DISABLE;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+  hadc.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
+  hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc.Init.ContinuousConvMode = DISABLE;
+  hadc.Init.DiscontinuousConvMode = DISABLE;
+  hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc.Init.DMAContinuousRequests = DISABLE;
+  hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc.Init.LowPowerAutoWait = DISABLE;
+  hadc.Init.LowPowerFrequencyMode = ENABLE;
+  hadc.Init.LowPowerAutoPowerOff = DISABLE;
+  if (HAL_ADC_Init(&hadc) != HAL_OK)
+  {
+    Error_Handler("HAL_ADC_Init failed!");
+  }
+
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler("HAL_ADC_ConfigChannel failed!");
+  }
+}
+
 static void PortInit(void)
 {
 	//Enable GPIO Ports Clock
@@ -136,25 +161,11 @@ static void PortInit(void)
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	//Initialize all Output-Pins of Port A
-	GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10;
+	GPIO_InitStruct.Pin = GPIO_PIN_5;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	//Initialize all Output-Pins of Port B
-	GPIO_InitStruct.Pin = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_10;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	//Initialize all Output-Pins of Port C
-	GPIO_InitStruct.Pin = GPIO_PIN_7;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	//Initialize all Input-Pins of Port C
 	GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -164,151 +175,33 @@ static void PortInit(void)
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
-static void ShowOnSegment(unsigned int counter)
-{
-	if(counter == 0)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_SET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 1)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_SET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 2)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 3)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 4)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 5)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 6)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 7)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_SET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 8)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-	if(counter == 9)
-	{
-		HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_C,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_D,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_E,  GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SEGMENT_F,  GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(SEGMENT_G,  GPIO_PIN_RESET);		
-		HAL_GPIO_WritePin(SEGMENT_DP, GPIO_PIN_SET);
-	}
-}
-
 //Timed interupt callback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
-	//Variables to keep track of the time and the counter
+	//Variables to keep track of the time and the ADC value
 	static unsigned int elapsedTime = 0;
-	static unsigned int counter = 0;
-
-	//Toggle Onboard-LED => 1/2 sec. on and 1/2 sec. off
-	if(elapsedTime == 500)
+	static uint32_t val = 0;
+	static char buffer[15];
+		
+	//Get ADC value
+	HAL_ADC_Start(&hadc);
+	HAL_ADC_PollForConversion(&hadc, 100);
+	val = HAL_ADC_GetValue(&hadc);
+	sprintf(buffer, "val = %lu\r\n", val);
+	HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 100);
+	
+	//Check if 1 sec. elapsed
+	if((elapsedTime % 1000) == 0)
 	{
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-		elapsedTime = 0;
-	}
-
-	//Show current counter on 7-Segment-Display
-	ShowOnSegment(counter);
-
-	//Check if blue push button is pressed
-	GPIO_PinState state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-	if(state == GPIO_PIN_RESET) //Falling edge trigger detection
-	{	
-		if(counter < 10)	
-			counter++;
-		else
-			counter = 0;		
-
-		Print("Button pressed!");		
-	}
+		//Toggle Onboard-LED (1 sec. on and 1 sec. off)
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);			
+	}	
 
 	//Increment elapsed time
 	elapsedTime += 100;
+
+	if(elapsedTime > 1000)
+		elapsedTime -= 1000;
 }
 
 int main(void)
@@ -319,10 +212,11 @@ int main(void)
 	PortInit();
 	MX_TIM2_Init();
 	MX_USART2_UART_Init();
+	MX_ADC_Init();
 	HAL_TIM_Base_Start_IT(&htim2);
 
 	while (1)
 	{
-		
+
 	}
 }
