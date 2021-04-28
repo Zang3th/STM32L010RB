@@ -1,0 +1,2 @@
+utility.c:3:6:Print	16	static
+utility.c:8:6:Error_Handler	16	static,ignoring_inline_asm

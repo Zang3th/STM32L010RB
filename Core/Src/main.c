@@ -1,10 +1,20 @@
 #include "main.h"
-#include <stdio.h>
-#include <string.h>
 
 /* Static PIN/PORT LOOK-UP
-	A:
-		PA5: Onboard-LED
+	
+	Always:
+		PA2:	USART_TX -> Connected to debugger
+		PA3:	USART_RX -> Connected to debugger
+		PA5: 	Onboard-LED
+		PA15:	Timer 2 PWM
+		PC13: 	Blue push button
+
+	Project specific:
+		PA0: 		RS
+		PA1:		R/W
+		PB0 - PB3:	DB0 - DB3
+		PB4 - PB7: 	DB4 - DB7
+		E: 			PB8
 */
 
 // ----- Variables ----- 
@@ -14,21 +24,7 @@ UART_HandleTypeDef huart2;
 
 // ----- Functions ----- 
 
-static void Print(char* msg)
-{
-	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
-}
-
-void Error_Handler(char* err_msg)
-{
-     __disable_irq();
-    while (1)
-	{
-    	Print(err_msg);
-	}
-}
-
-void SystemClock_Config(void)
+static void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -44,7 +40,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler("HAL_RCC_OscConfig failed!");
+    Error_Handler(&huart2, "HAL_RCC_OscConfig failed!");
   }
   
   //Initializes the CPU, AHB and APB buses clocks
@@ -56,7 +52,7 @@ void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
-    Error_Handler("HAL_RCC_ClockConfig failed!");
+    Error_Handler(&huart2, "HAL_RCC_ClockConfig failed!");
   }
 }
 
@@ -75,7 +71,7 @@ static void MX_USART2_UART_Init(void)
 
 	if (HAL_UART_Init(&huart2) != HAL_OK)
 	{
-		Error_Handler("HAL_UART_Init failed!");
+		Error_Handler(&huart2, "HAL_UART_Init failed!");
 	}
 }
 
@@ -93,20 +89,20 @@ static void MX_TIM2_Init(void)
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
 	{
-		Error_Handler("HAL_TIM_Base_Init failed!");
+		Error_Handler(&huart2, "HAL_TIM_Base_Init failed!");
 	}
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL; //Use internal clock as a clock source (at 2 MHZ, max. 32 MHZ)
 	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
 	{
-		Error_Handler("HAL_TIM_ConfigClockSource failed!");
+		Error_Handler(&huart2, "HAL_TIM_ConfigClockSource failed!");
 	}
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
 	{
-		Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
+		Error_Handler(&huart2, "HAL_TIMEx_MasterConfigSynchronization failed!");
 	}
 
 	HAL_TIM_MspPostInit(&htim2);
