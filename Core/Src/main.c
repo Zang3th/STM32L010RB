@@ -5,15 +5,12 @@
 /* Static PIN/PORT LOOK-UP
 	A:
 		PA5: Onboard-LED
-	C:
-		PC13: Blue push button	
 */
 
 // ----- Variables ----- 
 
 TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart2;
-ADC_HandleTypeDef hadc;
 
 // ----- Functions ----- 
 
@@ -51,8 +48,7 @@ void SystemClock_Config(void)
   }
   
   //Initializes the CPU, AHB and APB buses clocks
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -87,13 +83,12 @@ static void MX_TIM2_Init(void)
 {
 	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
-	TIM_OC_InitTypeDef sConfigOC = {0};
 
 	//Configure timer 2
 	htim2.Instance = TIM2;
 	htim2.Init.Prescaler = 209; //2.097 MHZ divided by 209 results in 10000 oscillations per second
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 100; //Counter goes up to 100, then starts anew. This results in 100 counter restarts per second
+	htim2.Init.Period = 100; //Counter goes up to 100, then starts anew. This results in 100 counter restarts per second (every 10ms)
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -107,11 +102,6 @@ static void MX_TIM2_Init(void)
 		Error_Handler("HAL_TIM_ConfigClockSource failed!");
 	}
 
-	if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
-  	{
-   		Error_Handler("HAL_TIM_PWM_Init failed!");
-  	}
-
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
@@ -119,51 +109,7 @@ static void MX_TIM2_Init(void)
 		Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
 	}
 
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  	sConfigOC.Pulse = 50;
-  	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  	{
-   		Error_Handler("HAL_TIM_PWM_ConfigChannel failed!");
-  	}
-
 	HAL_TIM_MspPostInit(&htim2);
-}
-
-static void MX_ADC_Init(void)
-{
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  //Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-  hadc.Instance = ADC1;
-  hadc.Init.OversamplingMode = DISABLE;
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
-  hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-  hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
-  hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.ContinuousConvMode = DISABLE;
-  hadc.Init.DiscontinuousConvMode = DISABLE;
-  hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc.Init.DMAContinuousRequests = DISABLE;
-  hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc.Init.LowPowerAutoWait = DISABLE;
-  hadc.Init.LowPowerFrequencyMode = ENABLE;
-  hadc.Init.LowPowerAutoPowerOff = DISABLE;
-  if (HAL_ADC_Init(&hadc) != HAL_OK)
-  {
-    Error_Handler("HAL_ADC_Init failed!");
-  }
-
-  sConfig.Channel = ADC_CHANNEL_0;
-  sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler("HAL_ADC_ConfigChannel failed!");
-  }
 }
 
 static void Port_Init(void)
@@ -183,55 +129,26 @@ static void Port_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	//Initialize all Input-Pins of Port C
-	GPIO_InitStruct.Pin = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
 //Timed interupt callback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
-	//Variables to keep track of the time and the ADC value
+	//Variables to keep track of the time
 	static unsigned int elapsedTime = 0;
-	static uint32_t val = 0;
-	static char buffer[15];
-	static uint32_t pulse = 0;
-		
-	//Get ADC value
-	HAL_ADC_Start(&hadc);
-	HAL_ADC_PollForConversion(&hadc, 100);
-	val = HAL_ADC_GetValue(&hadc);
-	sprintf(buffer, "value = %lu\r\n", val);
-	Print(buffer);
 	
 	//Check if 1 sec. elapsed
-	if((elapsedTime % 10000) == 0)
+	if((elapsedTime % 1000) == 0)
 	{
 		//Toggle Onboard-LED (1 sec. on and 1 sec. off)
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);			
 	}	
 
 	//Increment elapsed time
-	elapsedTime += 100;
+	elapsedTime += 10;
 
-	if(elapsedTime > 10000)
-		elapsedTime -= 10000;
-	
-	//Convert ADC value into a usable pulse width
-	pulse = val / 40;
-	if(pulse > 100)
-		pulse = 100;
-	else if(pulse < 2)
-		pulse = 0;	
-
-	//Update PWM with new pulse width
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
-	sprintf(buffer, "pulse = %lu\r\n", pulse);
-	Print(buffer);
+	if(elapsedTime > 1000)
+		elapsedTime -= 1000;
 }
 
 int main(void)
@@ -242,9 +159,7 @@ int main(void)
 	Port_Init();
 	MX_TIM2_Init();
 	MX_USART2_UART_Init();
-	MX_ADC_Init();
 	HAL_TIM_Base_Start_IT(&htim2);
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 
 	while (1)
 	{
