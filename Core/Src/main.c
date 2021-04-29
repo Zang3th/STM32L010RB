@@ -123,7 +123,7 @@ static void Port_Init(void)
 	GPIO_InitStruct.Pin = GPIO_PIN_5;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
@@ -157,6 +157,14 @@ int main(void)
 	MX_USART2_UART_Init();
 	HAL_TIM_Base_Start_IT(&htim2);
 
+	//LCD stuff
+	LCD_Init();
+	LCD_Set8BitMode();
+	LCD_ClearDisplay();
+	LCD_ReturnHome();
+	LCD_TurnDisplayOn();
+	LCD_DisplayChar('c');
+	
 	while (1)
 	{
 
