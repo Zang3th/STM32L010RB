@@ -31,7 +31,20 @@
 #define DB1 GPIOB, GPIO_PIN_1
 #define DB0 GPIOB, GPIO_PIN_0
 
-// ----- Private Functions ----- 
+// ----- Typedefs -----
+typedef struct
+{
+    unsigned b7:1;
+    unsigned b6:1;
+    unsigned b5:1;
+    unsigned b4:1;
+    unsigned b3:1;
+    unsigned b2:1;
+    unsigned b1:1;
+    unsigned b0:1;
+} byte_t;
+
+// ----- Private helper functions ----- 
 
 static void set_RS(int state)
 {
@@ -87,11 +100,35 @@ static int get_DB7()
         return 0;
 }
 
-static void sendCommand()
+static void sendEnable()
 {
     set_E(1);
-    HAL_Delay(1);
     set_E(0);
+}
+static void waitForBusyFlag()
+{
+    set_RS(0);
+    set_RW(1);
+    sendEnable();    
+
+    int val = 1;
+    while(val != 0)
+    {
+        val = get_DB7();
+    }
+}
+static void sendCommand()
+{
+    sendEnable();
+    waitForBusyFlag();
+}
+static byte_t charToBinary(char c)
+{
+
+}
+static void sendBinary(byte_t b)
+{
+
 }
 
 // ----- Public Functions ----- 
@@ -115,6 +152,7 @@ void LCD_Init()
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    //Wait after startup
     HAL_Delay(16);
 
     //Reset everything
@@ -136,12 +174,15 @@ void LCD_Set8BitMode()
 {
     set_RS(0);
     set_RW(0);
+
     set_DB7(0);
     set_DB6(0);
     set_DB5(1); //Configure Function Set
     set_DB4(1); //8-Bit or 4-Bit
     set_DB3(1); //2 Lines or 1 Line
     set_DB2(0); //5x11 or 5x8 Pixel
+    set_DB1(0);
+    set_DB0(0);
 
     sendCommand();
 }
@@ -150,6 +191,7 @@ void LCD_ClearDisplay()
 {
     set_RS(0);
     set_RW(0);
+
     set_DB7(0);
     set_DB6(0);
     set_DB5(0);
@@ -166,6 +208,7 @@ void LCD_ReturnHome()
 {
     set_RS(0);
     set_RW(0);
+
     set_DB7(0);
     set_DB6(0);
     set_DB5(0);
@@ -173,6 +216,7 @@ void LCD_ReturnHome()
     set_DB3(0);
     set_DB2(0);
     set_DB1(1);
+    set_DB0(0);
 
     sendCommand();
 }
@@ -181,6 +225,7 @@ void LCD_TurnDisplayOn()
 {
     set_RS(0);
     set_RW(0);
+
     set_DB7(0);
     set_DB6(0);
     set_DB5(0);
@@ -197,6 +242,7 @@ void LCD_TurnDisplayOff()
 {
     set_RS(0);
     set_RW(0);
+
     set_DB7(0);
     set_DB6(0);
     set_DB5(0);
@@ -213,19 +259,24 @@ void LCD_DisplayChar(char c)
 {
     set_RS(1);
     set_RW(0);
+
     set_DB7(0);
     set_DB6(1);
     set_DB5(1);
     set_DB4(0);
     set_DB3(0);
     set_DB2(0);
-    set_DB1(0);
-    set_DB0(1);
+    set_DB1(1);
+    set_DB0(0);
 
     sendCommand();
 }
 
 void LCD_Print(const char* string)
 {
+    //Iterate over every character
 
+        //Get binary representation of the character
+
+        //Set bits accordingly
 }
