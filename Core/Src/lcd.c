@@ -31,18 +31,8 @@
 #define DB1 GPIOB, GPIO_PIN_1
 #define DB0 GPIOB, GPIO_PIN_0
 
-// ----- Typedefs -----
-typedef struct
-{
-    unsigned b7:1;
-    unsigned b6:1;
-    unsigned b5:1;
-    unsigned b4:1;
-    unsigned b3:1;
-    unsigned b2:1;
-    unsigned b1:1;
-    unsigned b0:1;
-} byte_t;
+// ----- Variables -----
+static char byteBuffer[8];
 
 // ----- Private helper functions ----- 
 
@@ -103,6 +93,11 @@ static int get_DB7()
 static void sendEnable()
 {
     set_E(1);
+
+    //Wait atleast 2 ticks
+    uint32_t tick_start = HAL_GetTick();
+    while((HAL_GetTick() - tick_start) <= 2){}
+
     set_E(0);
 }
 static void waitForBusyFlag()
@@ -114,7 +109,7 @@ static void waitForBusyFlag()
     int val = 1;
     while(val != 0)
     {
-        val = get_DB7();
+        val = get_DB7(); //Get busy flag
     }
 }
 static void sendCommand()
@@ -122,13 +117,30 @@ static void sendCommand()
     sendEnable();
     waitForBusyFlag();
 }
-static byte_t charToBinary(char c)
+static void charToByteBuffer(char c)
 {
-
+    for(uint8_t i = 0; i < 8; i++)
+    {
+        char val = (c >> i) & 0x01;
+        byteBuffer[i] = val;
+    }
 }
-static void sendBinary(byte_t b)
-{
+static void sendByteBuffer()
+{    
+    //Write data
+    set_RS(1);
+    set_RW(0);
 
+    //Address to write to correct pin
+    uint16_t address = 0x0001;
+
+    for(uint8_t i = 0; i < 8; i++)
+    {        
+        char val = byteBuffer[i];
+        HAL_GPIO_WritePin(GPIOB, address, (int)val); 
+        address = address << 1; //Go to next pin
+    }
+    sendCommand();
 }
 
 // ----- Public Functions ----- 
@@ -257,26 +269,16 @@ void LCD_TurnDisplayOff()
 
 void LCD_DisplayChar(char c)
 {
-    set_RS(1);
-    set_RW(0);
-
-    set_DB7(0);
-    set_DB6(1);
-    set_DB5(1);
-    set_DB4(0);
-    set_DB3(0);
-    set_DB2(0);
-    set_DB1(1);
-    set_DB0(0);
-
-    sendCommand();
+    charToByteBuffer(c);
+    sendByteBuffer();
 }
 
 void LCD_Print(const char* string)
 {
-    //Iterate over every character
-
-        //Get binary representation of the character
-
-        //Set bits accordingly
+    //Iterate over every character     
+    for(int i = 0; i < strlen(string); i++)
+    {
+        charToByteBuffer(string[i]); //Get binary representation of the character
+        sendByteBuffer(); //Set pins accordingly
+    }    
 }

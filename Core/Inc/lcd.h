@@ -2,6 +2,8 @@
 #define LCD
 
 #include "stm32l0xx_hal.h"
+#include "utility.h"
+#include <string.h>
 
 void LCD_Init();
 void LCD_Set8BitMode();

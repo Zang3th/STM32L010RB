@@ -1,2 +1,5 @@
-utility.c:3:6:Print	16	static
-utility.c:8:6:Error_Handler	16	static,ignoring_inline_asm
+utility.c:5:6:Print_msg	16	static
+utility.c:10:6:Print_int8_t	16	static
+utility.c:16:6:Print_int16_t	16	static
+utility.c:22:6:Print_int32_t	16	static
+utility.c:28:6:Error_Handler	16	static,ignoring_inline_asm

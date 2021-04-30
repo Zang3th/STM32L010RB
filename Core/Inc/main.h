@@ -6,6 +6,6 @@
 #include "lcd.h"
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-extern void Error_Handler(UART_HandleTypeDef* huart, char* err_msg);
+extern void Error_Handler(char* err_msg);
 
 #endif

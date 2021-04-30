@@ -40,7 +40,7 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler(&huart2, "HAL_RCC_OscConfig failed!");
+    Error_Handler("HAL_RCC_OscConfig failed!");
   }
   
   //Initializes the CPU, AHB and APB buses clocks
@@ -52,7 +52,7 @@ static void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
-    Error_Handler(&huart2, "HAL_RCC_ClockConfig failed!");
+    Error_Handler("HAL_RCC_ClockConfig failed!");
   }
 }
 
@@ -71,7 +71,7 @@ static void MX_USART2_UART_Init(void)
 
 	if (HAL_UART_Init(&huart2) != HAL_OK)
 	{
-		Error_Handler(&huart2, "HAL_UART_Init failed!");
+		Error_Handler("HAL_UART_Init failed!");
 	}
 }
 
@@ -89,20 +89,20 @@ static void MX_TIM2_Init(void)
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
 	{
-		Error_Handler(&huart2, "HAL_TIM_Base_Init failed!");
+		Error_Handler("HAL_TIM_Base_Init failed!");
 	}
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL; //Use internal clock as a clock source (at 2 MHZ, max. 32 MHZ)
 	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
 	{
-		Error_Handler(&huart2, "HAL_TIM_ConfigClockSource failed!");
+		Error_Handler("HAL_TIM_ConfigClockSource failed!");
 	}
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
 	{
-		Error_Handler(&huart2, "HAL_TIMEx_MasterConfigSynchronization failed!");
+		Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
 	}
 
 	HAL_TIM_MspPostInit(&htim2);
@@ -120,7 +120,7 @@ static void Port_Init(void)
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	//Initialize all Output-Pins of Port A
-	GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5;
+	GPIO_InitStruct.Pin = GPIO_PIN_5;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
@@ -163,8 +163,11 @@ int main(void)
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
 	LCD_TurnDisplayOn();
+	LCD_DisplayChar('a');	
+	LCD_DisplayChar('b');	
 	LCD_DisplayChar('c');
-	
+	LCD_Print(" Hello World!");
+
 	while (1)
 	{
 
