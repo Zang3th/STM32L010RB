@@ -156,8 +156,6 @@ int main(void)
 	MX_TIM2_Init();
 	HAL_TIM_Base_Start_IT(&htim2);	
 	MX_USART2_UART_Init();
-	__HAL_UART_FLUSH_DRREGISTER(&huart2);
-	HAL_UART_AbortTransmit(&huart2);
 
 	//LCD stuff
 	LCD_Init();
@@ -165,7 +163,7 @@ int main(void)
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
 	LCD_TurnDisplayOn();
-	LCD_printf("Value = %d", 99);
+	LCD_printf("Value = %d", 999);
 
 	while (1)
 	{
