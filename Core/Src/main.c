@@ -40,7 +40,7 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler("HAL_RCC_OscConfig failed!");
+    UT_Error_Handler("HAL_RCC_OscConfig failed!");
   }
   
   //Initializes the CPU, AHB and APB buses clocks
@@ -52,7 +52,7 @@ static void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
-    Error_Handler("HAL_RCC_ClockConfig failed!");
+    UT_Error_Handler("HAL_RCC_ClockConfig failed!");
   }
 }
 
@@ -71,7 +71,7 @@ static void MX_USART2_UART_Init(void)
 
 	if (HAL_UART_Init(&huart2) != HAL_OK)
 	{
-		Error_Handler("HAL_UART_Init failed!");
+		UT_Error_Handler("HAL_UART_Init failed!");
 	}
 }
 
@@ -89,20 +89,20 @@ static void MX_TIM2_Init(void)
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
 	{
-		Error_Handler("HAL_TIM_Base_Init failed!");
+		UT_Error_Handler("HAL_TIM_Base_Init failed!");
 	}
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL; //Use internal clock as a clock source (at 2 MHZ, max. 32 MHZ)
 	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
 	{
-		Error_Handler("HAL_TIM_ConfigClockSource failed!");
+		UT_Error_Handler("HAL_TIM_ConfigClockSource failed!");
 	}
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
 	{
-		Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
+		UT_Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
 	}
 
 	HAL_TIM_MspPostInit(&htim2);
@@ -137,7 +137,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	if((elapsedTime % 1000) == 0)
 	{
 		//Toggle Onboard-LED (1 sec. on and 1 sec. off)
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);			
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	
 	}	
 
 	//Increment elapsed time
@@ -154,8 +154,10 @@ int main(void)
 	SystemClock_Config();
 	Port_Init();
 	MX_TIM2_Init();
+	HAL_TIM_Base_Start_IT(&htim2);	
 	MX_USART2_UART_Init();
-	HAL_TIM_Base_Start_IT(&htim2);
+	__HAL_UART_FLUSH_DRREGISTER(&huart2);
+	HAL_UART_AbortTransmit(&huart2);
 
 	//LCD stuff
 	LCD_Init();
@@ -163,13 +165,10 @@ int main(void)
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
 	LCD_TurnDisplayOn();
-	LCD_DisplayChar('a');	
-	LCD_DisplayChar('b');	
-	LCD_DisplayChar('c');
-	LCD_Print(" Hello World!");
+	LCD_printf("Value = %d", 99);
 
 	while (1)
 	{
-
+		
 	}
 }

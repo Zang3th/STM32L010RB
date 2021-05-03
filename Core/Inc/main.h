@@ -6,6 +6,6 @@
 #include "lcd.h"
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-extern void Error_Handler(char* err_msg);
+extern void UT_Error_Handler(char* err_msg);
 
 #endif

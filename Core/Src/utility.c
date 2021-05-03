@@ -1,35 +1,27 @@
 #include "utility.h"
 
-static char buffer[20];
-
-void Print_msg(char* msg)
+void send_to_UART(char* msg)
 {
-	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
-void Print_int8_t(char* name, uint8_t value)
+void UT_printf(const char* format, ...)
 {
-	sprintf(buffer, "%s = %d\r\n", name, value);
-	Print_msg(buffer);
+	va_list args;
+	char buffer[32];	
+	memset(buffer, 0, 32);
+
+	va_start(args, format);	
+	vsprintf(buffer, format, args);
+	send_to_UART(buffer);
+	va_end(args);
 }
 
-void Print_int16_t(char* name, uint16_t value)
-{
-	sprintf(buffer, "%s = %u\r\n", name, value);
-	Print_msg(buffer);
-}
-
-void Print_int32_t(char* name, uint32_t value)
-{
-	sprintf(buffer, "%s = %lu\r\n", name, value);
-	Print_msg(buffer);
-}
-
-void Error_Handler(char* err_msg)
+void UT_Error_Handler(char* err_msg)
 {
      __disable_irq();
     while (1)
 	{
-    	Print_msg(err_msg);
+    	send_to_UART(err_msg);
 	}
 }

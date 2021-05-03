@@ -55,7 +55,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   if(huart->Instance==USART2)
   {
     __HAL_RCC_USART2_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
 
     //USART2 GPIO Configuration
     //PA2     ------> USART2_TX

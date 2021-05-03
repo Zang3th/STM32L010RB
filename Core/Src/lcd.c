@@ -282,3 +282,15 @@ void LCD_Print(const char* string)
         sendByteBuffer(); //Set pins accordingly
     }    
 }
+
+void LCD_printf(const char* format, ...)
+{
+	va_list args;
+	char buffer[256];	
+	memset(buffer, 0, 256);
+
+	va_start(args, format);	
+	vsprintf(buffer, format, args);
+	LCD_Print(buffer);
+	va_end(args);
+}

@@ -23,3 +23,4 @@ lcd.c:236:6:LCD_TurnDisplayOn	8	static
 lcd.c:253:6:LCD_TurnDisplayOff	8	static
 lcd.c:270:6:LCD_DisplayChar	16	static
 lcd.c:276:6:LCD_Print	24	static
+lcd.c:286:6:LCD_printf	272	static
