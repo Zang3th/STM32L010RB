@@ -10,11 +10,16 @@
 		PC13: 	Blue push button
 
 	Project specific:
-		PA0: 		RS
-		PA1:		R/W
-		PB0 - PB3:	DB0 - DB3
-		PB4 - PB7: 	DB4 - DB7
-		E: 			PB8
+		LCD:
+			PA0: 		RS
+			PA1:		R/W
+			PB0 - PB3:	DB0 - DB3
+			PB4 - PB7: 	DB4 - DB7
+			PB8: 		E
+
+		Temperature Sensor (AM2302):
+			PA7:		VCC
+			PA6:		Data-bus
 */
 
 // ----- Defines -----
@@ -34,7 +39,7 @@
 // ----- Variables -----
 static char byteBuffer[8];
 
-// ----- Private helper functions ----- 
+// ----- Private functions ----- 
 
 static void set_RS(int state)
 {
