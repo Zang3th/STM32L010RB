@@ -130,6 +130,13 @@ static void Port_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	//Initialize all Output-Pins of Port C
+	GPIO_InitStruct.Pin = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
 //Timed interupt callback function
@@ -143,6 +150,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	{
 		//Toggle Onboard-LED (1 sec. on and 1 sec. off)
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	
+	}
+
+	//Check if 200 mSec. elapsed
+	if((elapsedTime % 200) == 0)
+	{
+		if((HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) == 0)
+		{		
+			//DHT_ReadData();
+			//UT_printf("Pressed!");
+		}
 	}	
 
 	//Increment elapsed time
@@ -153,7 +170,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 }
 
 int main(void)
-{
+{		
 	//Init stuff
 	HAL_Init();
 	SystemClock_Config();
@@ -170,8 +187,31 @@ int main(void)
 	LCD_TurnDisplayOn();
 	LCD_printf("Value = %d", 999);
 
+	//DHT stuff
+	DHT22_Init(GPIOA, GPIO_PIN_6);
+	//DHT_Init();
+	
+	uint16_t counter = 0;
+	//uint16_t temp = 0, hum = 0;
+	
+	DHT_DataTypedef DHT11_Data;
+	float Temperature, Humidity;
+
 	while (1)
-	{
+	{		
+		counter++;
+		//DHT22_GetTemp_Humidity(&temp, &hum);
+		//UT_printf("Temp: %f, Hum: %f\r\n", temp, hum);
 		
+		DHT_GetData(&DHT11_Data);
+  	 	Temperature = DHT11_Data.Temperature;
+	  	Humidity = DHT11_Data.Humidity;
+
+
+		//UT_printf("%d. Messung:\r\nTemp: %d\r\nHum: %d\r\n\n", counter, temp, hum);	
+		
+		UT_printf("%d. Messung:\r\nTemp: %d\r\nHum: %d\r\n\n", counter, (uint16_t)Temperature, (uint16_t)Humidity);	
+
+		HAL_Delay(3000);
 	}
 }

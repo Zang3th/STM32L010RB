@@ -1,0 +1,5 @@
+dht.c:41:13:setPinMode	48	static
+dht.c:58:13:startTransmission	8	static
+dht.c:76:13:readDataLine	8	static
+dht.c:83:6:DHT_Init	8	static
+dht.c:92:6:DHT_ReadData	8	static,ignoring_inline_asm

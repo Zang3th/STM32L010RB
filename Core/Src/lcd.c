@@ -37,6 +37,7 @@
 #define DB0 GPIOB, GPIO_PIN_0
 
 // ----- Variables -----
+
 static char byteBuffer[8];
 
 // ----- Private functions ----- 

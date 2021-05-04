@@ -19,9 +19,15 @@ void UT_printf(const char* format, ...)
 
 void UT_Error_Handler(char* err_msg)
 {
-     __disable_irq();
+    __disable_irq();
     while (1)
 	{
     	send_to_UART(err_msg);
 	}
+}
+
+void UT_Delay_MicroSeconds(uint32_t uSec)
+{
+	uint32_t uSecWait = uSec * ((SystemCoreClock / 1000000) / 3);
+	while(uSecWait--);
 }

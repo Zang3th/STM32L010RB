@@ -1,4 +1,4 @@
-Core/Src/stm32l0xx_it.o: ../Core/Src/stm32l0xx_it.c ../Core/Inc/main.h \
+Core/Src/dht2.o: ../Core/Src/dht2.c ../Core/Inc/dht2.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
  ../Core/Inc/stm32l0xx_hal_conf.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h \
@@ -29,11 +29,9 @@ Core/Src/stm32l0xx_it.o: ../Core/Src/stm32l0xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h \
- ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
- ../Core/Inc/utility.h ../Core/Inc/lcd.h ../Core/Inc/dht.h \
- ../Core/Inc/dht2.h ../Core/Inc/dht3.h ../Core/Inc/stm32l0xx_it.h
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h
 
-../Core/Inc/main.h:
+../Core/Inc/dht2.h:
 
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
 
@@ -96,15 +94,3 @@ Core/Src/stm32l0xx_it.o: ../Core/Src/stm32l0xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h:
 
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h:
-
-../Core/Inc/utility.h:
-
-../Core/Inc/lcd.h:
-
-../Core/Inc/dht.h:
-
-../Core/Inc/dht2.h:
-
-../Core/Inc/dht3.h:
-
-../Core/Inc/stm32l0xx_it.h:
