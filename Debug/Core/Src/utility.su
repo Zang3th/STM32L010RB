@@ -1,4 +1,4 @@
 utility.c:3:6:send_to_UART	16	static
 utility.c:8:6:UT_printf	48	static
 utility.c:20:6:UT_Error_Handler	16	static,ignoring_inline_asm
-utility.c:29:6:UT_Delay_MicroSeconds	24	static
+utility.c:29:6:UT_Delay_MicroSeconds	16	static

@@ -18,7 +18,6 @@
 			PB8: 		E
 
 		Temperature Sensor (AM2302):
-			PA7:		VCC
 			PA6:		Data-bus
 */
 
@@ -28,49 +27,40 @@
 
 // ----- Variables -----
 
-static uint8_t byteBuffer[32];
-
-typedef enum{
+typedef enum {
 	OUTPUT = 0,
 	INPUT = 1
 } PIN_MODE_t;
 
 // ----- Private functions ----- 
 
-//Change pin mode
-static void setPinMode(PIN_MODE_t mode)
+static void setPinAsOutput()
 {
-	//Create init struct
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
-
 	GPIO_InitStruct.Pin = GPIO_PIN_6;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	
-	if(mode == OUTPUT)
-		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	else if(mode == INPUT)
-		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
-static void startTransmission()
+static void setPinAsInput()
 {
-	//Set pin low
-	HAL_GPIO_WritePin(DATA, 0);
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin = GPIO_PIN_6;	
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 
-	//Wait 1ms
-	UT_Delay_MicroSeconds(1000);
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
 
-	//Set pin high
-	HAL_GPIO_WritePin(DATA, 1);
+static void startTransmission()
+{		
+	HAL_GPIO_WritePin(DATA, 0); //Set pin low	
+	UT_Delay_MicroSeconds(1000); //Wait 1ms	
 
-	//Wait 30us
-	UT_Delay_MicroSeconds(30);
-
-	//Change pin to input
-	setPinMode(INPUT);
+	HAL_GPIO_WritePin(DATA, 1); //Set pin high	
+	UT_Delay_MicroSeconds(20); //Wait 30us
 }
 
 static bool readDataLine()
@@ -78,60 +68,48 @@ static bool readDataLine()
 	return (1 & (HAL_GPIO_ReadPin(DATA)));
 }
 
+static uint8_t checkResponse()
+{		
+	setPinAsInput(); //Change pin to input
+
+	uint8_t response = 0;
+
+	UT_Delay_MicroSeconds(40); //Wait 40us
+
+	if(!(readDataLine())) //If the pin is low
+	{
+		UT_Delay_MicroSeconds(80); //Wait 80 us
+
+		if((readDataLine())) //If the pin is high -> response is ok
+			response = 1;
+		else
+			response = -1;
+	}
+
+	while(readDataLine()); //Wait for pin to go low
+	return response;
+}
+
 // ----- Public Functions -----
 
 void DHT_Init()
-{
-	//Set pin as output
-	setPinMode(OUTPUT);
-
-	//Set pin high -> default state
-	HAL_GPIO_WritePin(DATA, 1);
+{	
+	setPinAsOutput(); //Set pin as output	
+	HAL_GPIO_WritePin(DATA, 1); //Set pin high -> default state
 }
 
-void DHT_ReadData()
+void DHT_ReadData(uint16_t* temp, uint16_t* humidity)
 {
-	__disable_irq();
-
 	startTransmission();
 
-	//Wait 40us
-	UT_Delay_MicroSeconds(40);
+	uint8_t response = checkResponse();
 
- 	//Wait while data line is low
-	while(!readDataLine());
-	
-	//Wait while data line is high
-	while(readDataLine());
-	/*
-	for(uint8_t i = 0; i < 32; i++)
-	{
-		//Wait while data line is low
-		while(!readDataLine());
+	if(response == 0)
+		UT_printf("Pin war nach 40usec nicht low!\r\n");
+	else if(response == 1)
+		UT_printf("Alles ok!\r\n");
+	else if(response == -1)
+		UT_printf("Pin war nach 120usec nicht high!\r\n");		
 
-		//Wait 40us
-		UT_Delay_MicroSeconds(40);
-
-		//Read data line
-		GPIO_PinState state = HAL_GPIO_ReadPin(DATA);
-
-		//If line is still high then its 1, else its 0
-		if(state == 1)
-			byteBuffer[i] = 1;
-		else
-			byteBuffer[i] = 0;
-
-		//Wait while data line is high		
-		while(readDataLine());	
-	}  */
-
-	__enable_irq();
-
-	UT_Delay_MicroSeconds(20000);
-	DHT_Init();	
-
-	/* for(uint8_t i = 0; i < 32; i++)
-	{
-		UT_printf("Bit %d = %d\r\n", i, byteBuffer[i]);
-	} */	
+	DHT_Init();
 }

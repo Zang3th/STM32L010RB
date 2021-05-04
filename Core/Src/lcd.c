@@ -18,7 +18,6 @@
 			PB8: 		E
 
 		Temperature Sensor (AM2302):
-			PA7:		VCC
 			PA6:		Data-bus
 */
 

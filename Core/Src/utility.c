@@ -28,6 +28,6 @@ void UT_Error_Handler(char* err_msg)
 
 void UT_Delay_MicroSeconds(uint32_t uSec)
 {
-	uint32_t uSecWait = uSec * ((SystemCoreClock / 1000000) / 3);
-	while(uSecWait--);
+	__HAL_TIM_SET_COUNTER(&htim21, 0);
+	while(__HAL_TIM_GET_COUNTER(&htim21) < uSec);
 }

@@ -30,8 +30,7 @@ Core/Src/stm32l0xx_hal_msp.o: ../Core/Src/stm32l0xx_hal_msp.c \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
- ../Core/Inc/utility.h ../Core/Inc/lcd.h ../Core/Inc/dht.h \
- ../Core/Inc/dht2.h ../Core/Inc/dht3.h
+ ../Core/Inc/utility.h ../Core/Inc/lcd.h ../Core/Inc/dht.h
 
 ../Core/Inc/main.h:
 
@@ -102,7 +101,3 @@ Core/Src/stm32l0xx_hal_msp.o: ../Core/Src/stm32l0xx_hal_msp.c \
 ../Core/Inc/lcd.h:
 
 ../Core/Inc/dht.h:
-
-../Core/Inc/dht2.h:
-
-../Core/Inc/dht3.h:

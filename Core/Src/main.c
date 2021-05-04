@@ -18,13 +18,13 @@
 			PB8: 		E
 
 		Temperature Sensor (AM2302):
-			PA7:		VCC
 			PA6:		Data-bus
 */
 
 // ----- Variables ----- 
 
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim21;
 UART_HandleTypeDef huart2;
 
 // ----- Functions ----- 
@@ -113,6 +113,37 @@ static void MX_TIM2_Init(void)
 	HAL_TIM_MspPostInit(&htim2);
 }
 
+static void MX_TIM21_Init(void)
+{
+	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+	TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+	//Configure timer 21
+	htim21.Instance = TIM21;
+	htim21.Init.Prescaler = 2;
+	htim21.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim21.Init.Period = 65535;
+	htim21.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim21.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim21) != HAL_OK)
+	{
+		UT_Error_Handler("HAL_TIM_Base_Init failed!");
+	}	
+
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim21, &sClockSourceConfig) != HAL_OK)
+	{
+		UT_Error_Handler("HAL_TIM_ConfigClockSource failed!");
+	}	
+
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim21, &sMasterConfig) != HAL_OK)
+	{
+		UT_Error_Handler("HAL_TIMEx_MasterConfigSynchronization failed!");
+	}
+}
+
 static void Port_Init(void)
 {
 	//Enable GPIO Ports Clock
@@ -152,16 +183,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	
 	}
 
-	//Check if 200 mSec. elapsed
-	if((elapsedTime % 200) == 0)
-	{
-		if((HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) == 0)
-		{		
-			//DHT_ReadData();
-			//UT_printf("Pressed!");
-		}
-	}	
-
 	//Increment elapsed time
 	elapsedTime += 10;
 
@@ -178,6 +199,8 @@ int main(void)
 	MX_TIM2_Init();
 	HAL_TIM_Base_Start_IT(&htim2);	
 	MX_USART2_UART_Init();
+	MX_TIM21_Init();
+	HAL_TIM_Base_Start(&htim21);
 
 	//LCD stuff
 	LCD_Init();
@@ -185,33 +208,18 @@ int main(void)
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
 	LCD_TurnDisplayOn();
-	LCD_printf("Value = %d", 999);
+	LCD_printf("Value = %d", 9999);
 
 	//DHT stuff
-	DHT22_Init(GPIOA, GPIO_PIN_6);
-	//DHT_Init();
+	DHT_Init();
 	
-	uint16_t counter = 0;
-	//uint16_t temp = 0, hum = 0;
-	
-	DHT_DataTypedef DHT11_Data;
-	float Temperature, Humidity;
+	uint16_t counter = 0, temp = 0, humidity = 0;
 
 	while (1)
 	{		
+		DHT_ReadData(&temp, &humidity);
 		counter++;
-		//DHT22_GetTemp_Humidity(&temp, &hum);
-		//UT_printf("Temp: %f, Hum: %f\r\n", temp, hum);
-		
-		DHT_GetData(&DHT11_Data);
-  	 	Temperature = DHT11_Data.Temperature;
-	  	Humidity = DHT11_Data.Humidity;
-
-
-		//UT_printf("%d. Messung:\r\nTemp: %d\r\nHum: %d\r\n\n", counter, temp, hum);	
-		
-		UT_printf("%d. Messung:\r\nTemp: %d\r\nHum: %d\r\n\n", counter, (uint16_t)Temperature, (uint16_t)Humidity);	
-
-		HAL_Delay(3000);
+		//UT_printf("%d. Messung:\r\nTemp: %d\r\nHum: %d\r\n\n", counter, temp, hum);					
+		HAL_Delay(3000); 
 	}
 }

@@ -6,6 +6,6 @@
 #include <stdbool.h>
 
 void DHT_Init();
-void DHT_ReadData();
+void DHT_ReadData(uint16_t* temp, uint16_t* humidity);
 
 #endif
