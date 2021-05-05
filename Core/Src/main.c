@@ -17,7 +17,7 @@
 			PB4 - PB7: 	DB4 - DB7
 			PB8: 		E
 
-		Temperature Sensor (AM2302):
+		Temperature Sensor (DHT11):
 			PA6:		Data-bus
 */
 
@@ -210,16 +210,25 @@ int main(void)
 	LCD_TurnDisplayOn();
 	LCD_printf("Value = %d", 9999);
 
-	//DHT stuff
-	DHT_Init();
-	
-	uint16_t counter = 0, temp = 0, humidity = 0;
+	uint8_t response = 0;
+	uint16_t humRaw = 0;
 
 	while (1)
 	{		
-		DHT_ReadData(&temp, &humidity);
-		counter++;
-		//UT_printf("%d. Messung:\r\nTemp: %d\r\nHum: %d\r\n\n", counter, temp, hum);					
-		HAL_Delay(3000); 
+		//Reading DHT
+		DHT11_StartTransmission();
+		response = DHT11_CheckResponse();
+		humRaw = DHT11_Read_2Byte();	 
+
+		/* if(response == 0)
+			UT_printf("\n\rSensor war nicht low nach 40us!\n\r");
+		else if(response == 1)
+			UT_printf("\n\rAlles ok!\n\r");
+		else if(response == -1)
+			UT_printf("\n\rSensor war nicht high nach 120us!\n\r");	 */
+
+		UT_printf("\n\rHumidity: %d%%", humRaw / 10);	
+
+		HAL_Delay(4000);	
 	}
 }

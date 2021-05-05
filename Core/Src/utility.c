@@ -26,7 +26,7 @@ void UT_Error_Handler(char* err_msg)
 	}
 }
 
-void UT_Delay_MicroSeconds(uint32_t uSec)
+void UT_Delay_MicroSeconds(uint16_t uSec)
 {
 	__HAL_TIM_SET_COUNTER(&htim21, 0);
 	while(__HAL_TIM_GET_COUNTER(&htim21) < uSec);

@@ -11,6 +11,6 @@ extern TIM_HandleTypeDef htim21;
 
 void UT_printf(const char* format, ...);
 void UT_Error_Handler(char* err_msg);
-void UT_Delay_MicroSeconds(uint32_t uSec);
+void UT_Delay_MicroSeconds(uint16_t uSec);
 
 #endif
