@@ -1,5 +1,5 @@
 dht11.c:30:13:DHT11_PinAsOutput	32	static
 dht11.c:40:13:DHT11_PinAsInput	32	static
 dht11.c:52:6:DHT11_StartTransmission	8	static
-dht11.c:62:9:DHT11_CheckResponse	16	static
-dht11.c:81:10:DHT11_Read_2Byte	16	static
+dht11.c:62:8:DHT11_CheckResponse	16	static
+dht11.c:86:10:DHT11_Read_2Byte	16	static

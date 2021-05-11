@@ -1,4 +1,4 @@
-Core/Src/dht.o: ../Core/Src/dht.c ../Core/Inc/dht.h \
+Core/Src/dht22.o: ../Core/Src/dht22.c ../Core/Inc/dht22.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
  ../Core/Inc/stm32l0xx_hal_conf.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h \
@@ -32,7 +32,7 @@ Core/Src/dht.o: ../Core/Src/dht.c ../Core/Inc/dht.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
  ../Core/Inc/utility.h
 
-../Core/Inc/dht.h:
+../Core/Inc/dht22.h:
 
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
 

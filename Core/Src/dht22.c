@@ -1,4 +1,4 @@
-#include "dht11.h"
+#include "dht22.h"
 
 /* Static PIN/PORT LOOK-UP
 	
@@ -17,7 +17,7 @@
 			PB4 - PB7: 	DB4 - DB7
 			PB8: 		E
 
-		Temperature Sensor (DHT11):
+		Temperature Sensor (DHT22):
 			PA6:		Data-bus
 */
 
@@ -27,17 +27,17 @@
 
 // ----- Private functions ----- 
 
-static void DHT11_PinAsOutput()
+static void DHT22_PinAsOutput()
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = GPIO_PIN_6;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
-static void DHT11_PinAsInput()
+static void DHT22_PinAsInput()
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = GPIO_PIN_6;	
@@ -49,36 +49,41 @@ static void DHT11_PinAsInput()
 
 // ----- Public Functions -----
 
-void DHT11_StartTransmission()
+void DHT22_StartTransmission()
 {		
-    DHT11_PinAsOutput();            //Set pin as output
+    DHT22_PinAsOutput();            //Set pin as output
 	HAL_GPIO_WritePin(DATA, 0);     //Set pin low	
-    HAL_Delay(18);	                //Wait 18ms
-	HAL_GPIO_WritePin(DATA, 1);     //Set pin high	
+    HAL_Delay(10);	                //Wait 18ms
+	HAL_GPIO_WritePin(DATA, 1);    //Set pin high	
 	UT_Delay_MicroSeconds(20);      //Wait 20us
-    DHT11_PinAsInput();             //Set pin as input
+    DHT22_PinAsInput();             //Set pin as input
 }
 
-uint8_t DHT11_CheckResponse()
+int8_t DHT22_CheckResponse()
 {
-    uint8_t response = 0;
-	UT_Delay_MicroSeconds(40);      //Wait 40us
+    int8_t response = 0;
+	UT_Delay_MicroSeconds(50);      //Wait 50us
 
 	if(!(HAL_GPIO_ReadPin(DATA)))   //If the pin is low
 	{
-		UT_Delay_MicroSeconds(80);  //Wait 80us
+		UT_Delay_MicroSeconds(100);  //Wait 100us
 
-		if(HAL_GPIO_ReadPin(DATA)) //If the pin is high -> response is ok
+		if((HAL_GPIO_ReadPin(DATA))) //If the pin is high -> response is ok
+		{
 			response = 1;
+		}			
 		else
+		{
 			response = -1;
+		}
 	}
 
 	while(HAL_GPIO_ReadPin(DATA));  //Wait for pin to go low
+
 	return response;
 }
 
-uint16_t DHT11_Read_2Byte()
+uint16_t DHT22_Read_2Byte()
 {
     uint16_t val = 0, j;
 	for(j = 0; j < 16; j++)

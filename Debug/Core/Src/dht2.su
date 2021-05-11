@@ -1,8 +1,0 @@
-dht2.c:34:6:DHT22_Init	24	static
-dht2.c:50:6:ONE_WIRE_PinMode	40	static
-dht2.c:72:6:ONE_WIRE_Pin_Write	16	static
-dht2.c:77:6:ONE_WIRE_Pin_Read	8	static
-dht2.c:83:6:DelayMicroSeconds	16	static
-dht2.c:89:6:DHT22_StartAcquisition	8	static
-dht2.c:105:6:DHT22_ReadRaw	24	static
-dht2.c:145:6:DHT22_GetTemp_Humidity	40	static

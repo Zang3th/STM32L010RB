@@ -17,7 +17,7 @@
 			PB4 - PB7: 	DB4 - DB7
 			PB8: 		E
 
-		Temperature Sensor (DHT11):
+		Temperature Sensor (DHT22):
 			PA6:		Data-bus
 */
 
@@ -31,34 +31,34 @@ UART_HandleTypeDef huart2;
 
 static void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  //Configure the main internal regulator output voltage
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  	//Configure the main internal regulator output voltage
+  	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  //Initializes the RCC Oscillators according to the specified parameters in the RCC_OscInitTypeDef structure
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSICalibrationValue = 0;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    UT_Error_Handler("HAL_RCC_OscConfig failed!");
-  }
-  
-  //Initializes the CPU, AHB and APB buses clocks
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  	//Initializes the RCC Oscillators according to the specified parameters in the RCC_OscInitTypeDef structure
+  	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+  	RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+  	RCC_OscInitStruct.MSICalibrationValue = 0;
+  	RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
+  	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  	{
+  	 	UT_Error_Handler("HAL_RCC_OscConfig failed!");
+  	}
+	
+  	//Initializes the CPU, AHB and APB buses clocks
+  	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+  	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    UT_Error_Handler("HAL_RCC_ClockConfig failed!");
-  }
+  	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  	{
+  	  	UT_Error_Handler("HAL_RCC_ClockConfig failed!");
+  	}
 }
 
 static void MX_USART2_UART_Init(void)
@@ -210,25 +210,34 @@ int main(void)
 	LCD_TurnDisplayOn();
 	LCD_printf("Value = %d", 9999);
 
-	uint8_t response = 0;
+	int8_t response = 0;
 	uint16_t humRaw = 0;
+
+	HAL_Delay(2000);
 
 	while (1)
 	{		
 		//Reading DHT
-		DHT11_StartTransmission();
-		response = DHT11_CheckResponse();
-		humRaw = DHT11_Read_2Byte();	 
+		//humRaw = 0;
+		DHT22_StartTransmission();
+		response = DHT22_CheckResponse();	 
 
-		/* if(response == 0)
-			UT_printf("\n\rSensor war nicht low nach 40us!\n\r");
+		if(response == 0)
+		{
+			UT_printf("\n\rSensor war nicht low nach 50us!\n\r");
+		}
 		else if(response == 1)
-			UT_printf("\n\rAlles ok!\n\r");
+		{
+			UT_printf("\n\rOK!\n\r");
+			//humRaw = DHT22_Read_2Byte();
+		}			
 		else if(response == -1)
-			UT_printf("\n\rSensor war nicht high nach 120us!\n\r");	 */
+		{
+			UT_printf("\n\rSensor war nicht high nach 150us!\n\r");
+		}	
 
-		UT_printf("\n\rHumidity: %d%%", humRaw / 10);	
+		//UT_printf("\n\rHumidity: %d%%", humRaw / 10);	
 
-		HAL_Delay(4000);	
+		HAL_Delay(2000);	
 	}
 }

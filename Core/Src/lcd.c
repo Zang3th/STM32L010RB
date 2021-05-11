@@ -17,7 +17,7 @@
 			PB4 - PB7: 	DB4 - DB7
 			PB8: 		E
 
-		Temperature Sensor (DHT11):
+		Temperature Sensor (DHT22):
 			PA6:		Data-bus
 */
 
