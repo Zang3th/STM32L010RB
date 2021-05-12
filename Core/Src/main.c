@@ -33,31 +33,40 @@ static void SystemClock_Config(void)
 {
   	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   	//Configure the main internal regulator output voltage
   	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   	//Initializes the RCC Oscillators according to the specified parameters in the RCC_OscInitTypeDef structure
-  	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  	RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  	RCC_OscInitStruct.MSICalibrationValue = 0;
-  	RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
-  	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_4;
+  	RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_2;
   	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   	{
-  	 	UT_Error_Handler("HAL_RCC_OscConfig failed!");
+  	  	UT_Error_Handler("HAL_RCC_OscConfig failed!");
   	}
-	
+
   	//Initializes the CPU, AHB and APB buses clocks
   	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-  	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+  	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
-  	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   	{
   	  	UT_Error_Handler("HAL_RCC_ClockConfig failed!");
+  	}
+
+  	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
+  	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  	{
+  	  	UT_Error_Handler("HAL_RCCEx_PeriphCLKConfig failed!");
   	}
 }
 
@@ -87,9 +96,9 @@ static void MX_TIM2_Init(void)
 
 	//Configure timer 2
 	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 209; //2.097 MHZ divided by 209 results in 10000 oscillations per second
+	htim2.Init.Prescaler = 3200; //32MHZ divided by 3200. This results in 10000 oscillations per second
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 100; //Counter goes up to 100, then starts anew. This results in 100 counter restarts per second (every 10ms)
+	htim2.Init.Period = 10000; //Counter goes up to 10000, then starts anew. This results in 1 counter restarts every second
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -97,7 +106,7 @@ static void MX_TIM2_Init(void)
 		UT_Error_Handler("HAL_TIM_Base_Init failed!");
 	}
 
-	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL; //Use internal clock as a clock source (at 2 MHZ, max. 32 MHZ)
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL; //Use internal clock as a clock source
 	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
 	{
 		UT_Error_Handler("HAL_TIM_ConfigClockSource failed!");
@@ -120,7 +129,7 @@ static void MX_TIM21_Init(void)
 
 	//Configure timer 21
 	htim21.Instance = TIM21;
-	htim21.Init.Prescaler = 2;
+	htim21.Init.Prescaler = 28; //32MHZ divided by 28. High resolution for microsecond-Delay-Function
 	htim21.Init.CounterMode = TIM_COUNTERMODE_UP;
 	htim21.Init.Period = 65535;
 	htim21.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -173,21 +182,8 @@ static void Port_Init(void)
 //Timed interupt callback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
-	//Variables to keep track of the time
-	static unsigned int elapsedTime = 0;
-	
-	//Check if 1 sec. elapsed
-	if((elapsedTime % 1000) == 0)
-	{
-		//Toggle Onboard-LED (1 sec. on and 1 sec. off)
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	
-	}
-
-	//Increment elapsed time
-	elapsedTime += 10;
-
-	if(elapsedTime > 1000)
-		elapsedTime -= 1000;
+	//Toggle Onboard-LED (1 sec. on and 1 sec. off)
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 }
 
 int main(void)
@@ -209,16 +205,15 @@ int main(void)
 	LCD_ReturnHome();
 	LCD_TurnDisplayOn();
 	LCD_printf("Value = %d", 9999);
-
-	int8_t response = 0;
-	uint16_t humRaw = 0;
-
+	
 	HAL_Delay(2000);
 
+	int8_t response = 0;
+	uint8_t h1[8], h2[8], t1[8], t2[8], cS[8];
+
 	while (1)
-	{		
+	{				
 		//Reading DHT
-		//humRaw = 0;
 		DHT22_StartTransmission();
 		response = DHT22_CheckResponse();	 
 
@@ -227,17 +222,14 @@ int main(void)
 			UT_printf("\n\rSensor war nicht low nach 50us!\n\r");
 		}
 		else if(response == 1)
-		{
-			UT_printf("\n\rOK!\n\r");
-			//humRaw = DHT22_Read_2Byte();
+		{			
+			DHT22_ReadDataToBuffersDebug(h1, h2, t1, t2, cS);			
 		}			
 		else if(response == -1)
 		{
-			UT_printf("\n\rSensor war nicht high nach 150us!\n\r");
-		}	
-
-		//UT_printf("\n\rHumidity: %d%%", humRaw / 10);	
-
-		HAL_Delay(2000);	
+			UT_printf("\n\rSensor war nicht high nach 100us!\n\r");
+		}		
+		
+		HAL_Delay(4000);
 	}
 }

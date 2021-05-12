@@ -1,5 +1,9 @@
 dht22.c:30:13:DHT22_PinAsOutput	32	static
-dht22.c:40:13:DHT22_PinAsInput	32	static
-dht22.c:52:6:DHT22_StartTransmission	8	static
-dht22.c:62:8:DHT22_CheckResponse	16	static
-dht22.c:86:10:DHT22_Read_2Byte	16	static
+dht22.c:41:13:DHT22_PinAsInput	32	static
+dht22.c:52:13:DHT22_PrintByteBuffer	32	static
+dht22.c:63:9:DHT22_ConvertByteBuffer	24	static
+dht22.c:78:6:DHT22_StartTransmission	8	static
+dht22.c:87:8:DHT22_CheckResponse	16	static
+dht22.c:111:9:DHT22_Read_Byte	16	static
+dht22.c:131:6:DHT22_ReadByteToBuffer	24	static
+dht22.c:150:6:DHT22_ReadDataToBuffersDebug	48	static
