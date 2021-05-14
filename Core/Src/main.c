@@ -220,8 +220,7 @@ int main(void)
 			if(success == 0)
 			{
 				UT_printf("\n\rHumidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
-				UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);				
-				LCD_ClearDisplay();
+				UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);	
 				LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
 				LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
 			}
