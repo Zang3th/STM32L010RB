@@ -150,7 +150,7 @@ static void sendByteBuffer()
 
 // ----- Public Functions ----- 
 
-void LCD_Init()
+void LCD_InitPins()
 {
     //Create init struct
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -159,18 +159,15 @@ void LCD_Init()
 	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	//Initialize all Output-Pins of Port B
 	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    //Wait after startup
-    HAL_Delay(16);
 
     //Reset everything
     set_RS(0);
@@ -280,12 +277,27 @@ void LCD_DisplayChar(char c)
 
 void LCD_Print(const char* string)
 {
-    //Iterate over every character     
-    for(int i = 0; i < strlen(string); i++)
+    int8_t chars = strlen(string);
+    if(chars < 17)
     {
-        charToByteBuffer(string[i]); //Get binary representation of the character
-        sendByteBuffer(); //Set pins accordingly
-    }    
+        //Iterate over every character     
+        for(int i = 0; i < strlen(string); i++)
+        {
+            charToByteBuffer(string[i]); //Get binary representation of the character
+            sendByteBuffer(); //Set pins accordingly
+        }   
+
+        //Iterate to fill up the line    
+        for(int i = 0; i < 40 - chars; i++)
+        {
+            charToByteBuffer(' '); //Get binary representation of a space
+            sendByteBuffer(); //Set pins accordingly
+        }  
+    }
+    else
+    {   
+        LCD_Print("String too long");
+    }
 }
 
 void LCD_printf(const char* format, ...)

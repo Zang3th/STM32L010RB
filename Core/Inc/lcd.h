@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-void LCD_Init();
+void LCD_InitPins();
 void LCD_Set8BitMode();
 void LCD_ClearDisplay();
 void LCD_ReturnHome();

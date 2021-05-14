@@ -199,17 +199,14 @@ int main(void)
 	HAL_TIM_Base_Start(&htim21);
 
 	//LCD stuff
-	LCD_Init();
+	HAL_Delay(30);
+	LCD_InitPins();
 	LCD_Set8BitMode();
+	LCD_TurnDisplayOn();
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
-	LCD_TurnDisplayOn();
-	LCD_printf("Value = %d", 9999);
-	
-	HAL_Delay(2000);
 	
 	uint16_t humidity = 0, temperature = 0;
-	uint16_t counter = 0;	
 
 	while (1)
 	{				
@@ -219,34 +216,35 @@ int main(void)
 
 		if(response == 0)
 		{
-			if((counter % 2) == 0)
+			int8_t success = DHT22_ReadData(&humidity, &temperature);
+			if(success == 0)
 			{
-				DHT22_ReadDataDebug();	
+				UT_printf("\n\rHumidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
+				UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);				
+				LCD_ClearDisplay();
+				LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
+				LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
 			}
-			else
+			else			
 			{
-				int8_t success = DHT22_ReadData(&humidity, &temperature);
-				if(success == 0)
-				{
-					UT_printf("\n\rHumidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
-					UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);
-				}
-				else			
-				{
-					UT_printf("\n\rChecksum wrong!\n\r");
-				}			
-			}	
+				UT_printf("\n\rChecksum wrong!\n\r");				
+				LCD_ClearDisplay();				
+				LCD_printf("Checksum wrong!");
+			}		
 		}			
 		else if(response == 1)
 		{			
-			UT_printf("\n\rSensor war nicht low nach 40us!");					
+			UT_printf("\n\rSensor wasn't low after 40us!");				
+			LCD_ClearDisplay();				
+			LCD_printf("Not low 40us!");				
 		}			
 		else if(response == 2)
 		{
-			UT_printf("\n\rSensor war nicht high nach 120us!");
+			UT_printf("\n\rSensor wasn't high after 120us!");						
+			LCD_ClearDisplay();				
+			LCD_printf("Not high 120us!");
 		}			
 		
-		counter++;
-		HAL_Delay(5000);
+		HAL_Delay(3000);
 	}
 }
