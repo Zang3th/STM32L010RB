@@ -123,24 +123,24 @@ void DHT22_StartTransmission()
 	UT_Delay_MicroSeconds(20);      //Wait 20us
 }
 
-int8_t DHT22_CheckResponse()
+uint8_t DHT22_CheckResponse()
 {
-    int8_t response = 0;
+    uint8_t response = 1;
 	UT_Delay_MicroSeconds(40);      	//Wait 40us
 
 	if(!(HAL_GPIO_ReadPin(DATA)))   	//If the pin is low
 	{
-		UT_Delay_MicroSeconds(80); 		//Wait 40us
-
+		UT_Delay_MicroSeconds(80); 		//Wait 80us
+		 
 		if((HAL_GPIO_ReadPin(DATA))) 	//If the pin is high -> response is ok
 		{
-			response = 1;
+			response = 0;
 		}			
 		else
 		{
-			response = -1;
+			response = 2;
 		}
-	}
+	} 
 
 	while(HAL_GPIO_ReadPin(DATA));  	//Wait for pin to go low
 
@@ -198,7 +198,7 @@ void DHT22_ReadDataDebug()
 	UT_printf("-----------------\n\r");
 }
 
-int8_t DHT22_ReadData(uint16_t* humidity, uint16_t* temperature)
+uint8_t DHT22_ReadData(uint16_t* humidity, uint16_t* temperature)
 {
 	uint8_t h1, h2, t1, t2, cs;
 
@@ -221,5 +221,5 @@ int8_t DHT22_ReadData(uint16_t* humidity, uint16_t* temperature)
 		return 0;
 	}
 
-	return -1;
+	return 1;
 }

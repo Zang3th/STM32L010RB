@@ -215,14 +215,10 @@ int main(void)
 	{				
 		//Reading DHT
 		DHT22_StartTransmission();
-		int8_t response = DHT22_CheckResponse();	 
+		uint8_t response = DHT22_CheckResponse();	 
 
 		if(response == 0)
 		{
-			UT_printf("\n\rSensor war nicht low nach 50us!\n\r");
-		}			
-		else if(response == 1)
-		{			
 			if((counter % 2) == 0)
 			{
 				DHT22_ReadDataDebug();	
@@ -239,11 +235,15 @@ int main(void)
 				{
 					UT_printf("\n\rChecksum wrong!\n\r");
 				}			
-			}			
+			}	
 		}			
-		else if(response == -1)
+		else if(response == 1)
+		{			
+			UT_printf("\n\rSensor war nicht low nach 40us!");					
+		}			
+		else if(response == 2)
 		{
-			UT_printf("\n\rSensor war nicht high nach 100us!\n\r");
+			UT_printf("\n\rSensor war nicht high nach 120us!");
 		}			
 		
 		counter++;

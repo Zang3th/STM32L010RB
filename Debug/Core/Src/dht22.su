@@ -5,6 +5,6 @@ dht22.c:63:16:DHT22_ConvertByteBuffer	24	static
 dht22.c:76:16:DHT22_Read_Byte	16	static
 dht22.c:96:13:DHT22_ReadByteToBuffer	24	static
 dht22.c:117:6:DHT22_StartTransmission	8	static
-dht22.c:126:8:DHT22_CheckResponse	16	static
+dht22.c:126:9:DHT22_CheckResponse	16	static
 dht22.c:150:6:DHT22_ReadDataDebug	80	static
-dht22.c:201:8:DHT22_ReadData	40	static
+dht22.c:201:9:DHT22_ReadData	40	static

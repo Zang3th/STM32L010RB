@@ -5,8 +5,8 @@
 #include "utility.h"
 
 void DHT22_StartTransmission();
-int8_t DHT22_CheckResponse();
+uint8_t DHT22_CheckResponse();
 void DHT22_ReadDataDebug();
-int8_t DHT22_ReadData(uint16_t* humidity, uint16_t* temperature);
+uint8_t DHT22_ReadData(uint16_t* humidity, uint16_t* temperature);
 
 #endif
