@@ -207,29 +207,46 @@ int main(void)
 	LCD_printf("Value = %d", 9999);
 	
 	HAL_Delay(2000);
-
-	int8_t response = 0;
-	uint8_t h1[8], h2[8], t1[8], t2[8], cS[8];
+	
+	uint16_t humidity = 0, temperature = 0;
+	uint16_t counter = 0;	
 
 	while (1)
 	{				
 		//Reading DHT
 		DHT22_StartTransmission();
-		response = DHT22_CheckResponse();	 
+		int8_t response = DHT22_CheckResponse();	 
 
 		if(response == 0)
 		{
 			UT_printf("\n\rSensor war nicht low nach 50us!\n\r");
-		}
+		}			
 		else if(response == 1)
 		{			
-			DHT22_ReadDataToBuffersDebug(h1, h2, t1, t2, cS);			
+			if((counter % 2) == 0)
+			{
+				DHT22_ReadDataDebug();	
+			}
+			else
+			{
+				int8_t success = DHT22_ReadData(&humidity, &temperature);
+				if(success == 0)
+				{
+					UT_printf("\n\rHumidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
+					UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);
+				}
+				else			
+				{
+					UT_printf("\n\rChecksum wrong!\n\r");
+				}			
+			}			
 		}			
 		else if(response == -1)
 		{
 			UT_printf("\n\rSensor war nicht high nach 100us!\n\r");
-		}		
+		}			
 		
-		HAL_Delay(4000);
+		counter++;
+		HAL_Delay(5000);
 	}
 }
