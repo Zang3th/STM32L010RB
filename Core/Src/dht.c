@@ -168,8 +168,9 @@ void DHT_ReadData_Debug(dht_t* dht)
 	DHT_ReadByteToBuffer_Debug(dht, t2);
 	DHT_ReadByteToBuffer_Debug(dht, cs);	
 
-	//Print raw binary data
-	UT_printf("\n\r----- DEBUG -----\n\r");
+	//Print raw binary data  
+	UT_printf("\n\r--------- DEBUG -----------\n\r");
+	UT_printf("----- %s -----\n\r", dht->name);  
 	DHT_PrintByteBuffer_Debug(h1, "h1_bin");
 	DHT_PrintByteBuffer_Debug(h2, "h2_bin");
 	DHT_PrintByteBuffer_Debug(t1, "t1_bin");
@@ -205,5 +206,5 @@ void DHT_ReadData_Debug(dht_t* dht)
 	UT_printf("\n\r");
 	UT_printf("Humidity: %d.%d%%\n\r", humi_uint / 10, humi_uint % 10);
 	UT_printf("Temperature: %d.%d\n\r", temp_uint / 10, temp_uint % 10);	
-	UT_printf("-----------------\n\r");
+	UT_printf("---------------------------\n\r");
 }
