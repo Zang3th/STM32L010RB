@@ -17,8 +17,8 @@
 			PB4 - PB7: 	DB4 - DB7
 			PB8: 		E
 
-		Temperature Sensor (DHT22):
-			PA6:		Data-bus
+		Temperature sensors:
+			PA6:		Data-bus Onboard-DHT22
 */
 
 // ----- Variables ----- 
@@ -26,6 +26,7 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim21;
 UART_HandleTypeDef huart2;
+dht_t dht_OnBoard;
 
 // ----- Functions ----- 
 
@@ -179,6 +180,63 @@ static void Port_Init(void)
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
+static void RetrieveDHT(dht_t* dht)
+{	
+	uint16_t humidity = 0, temperature = 0;
+
+	DHT_StartTransmission(dht);
+	uint8_t response = DHT_CheckResponse(dht);	 
+
+	if(response == 0)
+	{
+		int8_t success = DHT_ReadData(dht, &humidity, &temperature);
+		if(success == 0)
+		{
+			UT_printf("\n\rHumidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
+			UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);	
+			LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
+			LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
+		}
+		else			
+		{
+			UT_printf("\n\rChecksum wrong!\n\r");				
+			LCD_ClearDisplay();				
+			LCD_printf("Checksum wrong!");
+		}		
+	}			
+	else if(response == 1)
+	{			
+		UT_printf("\n\rSensor wasn't low after 40us!");				
+		LCD_ClearDisplay();				
+		LCD_printf("Not low 40us!");				
+	}			
+	else if(response == 2)
+	{
+		UT_printf("\n\rSensor wasn't high after 120us!");						
+		LCD_ClearDisplay();				
+		LCD_printf("Not high 120us!");
+	}
+}
+
+static void RetrieveDHT_Debug(dht_t* dht)
+{
+	DHT_StartTransmission(dht);
+	uint8_t response = DHT_CheckResponse(dht);	 
+
+	if(response == 0)
+	{
+		DHT_ReadData_Debug(dht);	
+	}			
+	else if(response == 1)
+	{			
+		UT_printf("\n\rSensor wasn't low after 40us!");						
+	}			
+	else if(response == 2)
+	{
+		UT_printf("\n\rSensor wasn't high after 120us!");			
+	}
+}
+
 //Timed interupt callback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
@@ -206,44 +264,15 @@ int main(void)
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
 	
-	uint16_t humidity = 0, temperature = 0;
+	//DHT stuff
+	dht_OnBoard.port = GPIOA;
+	dht_OnBoard.pin = GPIO_PIN_6;
 
 	while (1)
 	{				
-		//Reading DHT
-		DHT22_StartTransmission();
-		uint8_t response = DHT22_CheckResponse();	 
-
-		if(response == 0)
-		{
-			int8_t success = DHT22_ReadData(&humidity, &temperature);
-			if(success == 0)
-			{
-				UT_printf("\n\rHumidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
-				UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);	
-				LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
-				LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
-			}
-			else			
-			{
-				UT_printf("\n\rChecksum wrong!\n\r");				
-				LCD_ClearDisplay();				
-				LCD_printf("Checksum wrong!");
-			}		
-		}			
-		else if(response == 1)
-		{			
-			UT_printf("\n\rSensor wasn't low after 40us!");				
-			LCD_ClearDisplay();				
-			LCD_printf("Not low 40us!");				
-		}			
-		else if(response == 2)
-		{
-			UT_printf("\n\rSensor wasn't high after 120us!");						
-			LCD_ClearDisplay();				
-			LCD_printf("Not high 120us!");
-		}			
-		
+		RetrieveDHT(&dht_OnBoard);
+		HAL_Delay(3000);
+		RetrieveDHT_Debug(&dht_OnBoard);
 		HAL_Delay(3000);
 	}
 }

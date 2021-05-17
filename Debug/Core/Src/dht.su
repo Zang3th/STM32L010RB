@@ -1,0 +1,12 @@
+dht.c:5:13:DHT_PinAsOutput	48	static
+dht.c:16:13:DHT_PinAsInput	48	static
+dht.c:27:13:DHT_WritePin	16	static
+dht.c:32:22:DHT_ReadPin	16	static
+dht.c:37:16:DHT_Read_Byte	24	static
+dht.c:57:13:DHT_ReadByteToBuffer_Debug	24	static
+dht.c:76:13:DHT_PrintByteBuffer_Debug	32	static
+dht.c:87:16:DHT_ConvertByteBuffer_Debug	24	static
+dht.c:102:6:DHT_StartTransmission	16	static
+dht.c:111:9:DHT_CheckResponse	32	static
+dht.c:134:9:DHT_ReadData	48	static
+dht.c:160:6:DHT_ReadData_Debug	88	static
