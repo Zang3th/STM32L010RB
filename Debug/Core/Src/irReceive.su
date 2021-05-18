@@ -1,0 +1,4 @@
+irReceive.c:5:22:IR_ReadPin	16	static
+irReceive.c:12:6:IR_Init	48	static
+irReceive.c:25:9:IR_CheckForTransmission	24	static
+irReceive.c:40:10:IR_ReceiveSignal	32	static

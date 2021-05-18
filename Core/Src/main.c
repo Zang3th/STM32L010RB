@@ -22,7 +22,7 @@
 			PA7:		Data-bus Extern-DHT22
 
 		IR-Receiver:
-			PA8:		Data-bus	
+			PA8:		Data-bus IR-Receiver	
 */
 
 // ----- Variables ----- 
@@ -32,6 +32,7 @@ TIM_HandleTypeDef htim21;
 UART_HandleTypeDef huart2;
 static dht_t dht_OnBoard, dht_Extern;
 static uint8_t irsr_counter = 0;
+static irReceiver_t ir;
 
 // ----- Functions ----- 
 
@@ -257,6 +258,67 @@ static void RetrieveDHT_Debug(dht_t* dht)
 	}
 }
 
+static void ProcessIRSignal(uint32_t signal)
+{
+	UT_printf("\n\r0x%08x\n\r", signal);
+
+	switch(signal)
+	{
+		case(0xFFA25D):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('1');
+			break;
+
+		case (0xFF629D):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('2');
+			break;			
+
+		case (0xFFE21D):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('3');
+			break;
+
+		case (0xFF22DD):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('4');
+			break;
+
+		case (0xFF02FD):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('5');
+			break;
+
+		case (0xFFC23D):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('6');
+			break;
+
+		case (0xFFE01F):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('7');
+			break;
+
+		case (0xFFA857):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('8');
+			break;
+
+		case (0xFF906F):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('9');
+			break;
+
+		case (0xFF9867):
+			LCD_ClearDisplay();
+			LCD_DisplayChar('0');
+			break;
+
+		default:
+			break;
+	}
+}
+
 //Timed interupt callback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
@@ -310,8 +372,19 @@ int main(void)
 	dht_Extern.pin = GPIO_PIN_7;
 	dht_Extern.name = "DHT22 - Extern";
 
+	//IR-Receiver stuff
+	ir.port = GPIOA;
+	ir.pin = GPIO_PIN_8;
+	IR_Init(&ir);
+
 	while (1)
 	{				
-
+		uint8_t response = IR_CheckForTransmission(&ir);
+		if(response == 0)
+    	{
+			uint32_t signal = IR_ReceiveSignal(&ir);
+			ProcessIRSignal(signal);
+			HAL_Delay(500);	
+		}
 	}
 }
