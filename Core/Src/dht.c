@@ -40,14 +40,14 @@ static uint8_t DHT_Read_Byte(dht_t* dht)
 	for(j = 0; j < 8; j++)
 	{
 		while(!(DHT_ReadPin(dht)));  		//Wait for pin to go high
-		UT_Delay_MicroSeconds(50);         		//Wait 50 us
+		UT_Delay_MicroSeconds(50);         	//Wait 50 us
 		if (!(DHT_ReadPin(dht)))     		//If the pin is low
 		{
-			val &= ~(1 << (7 - j));  			//Write 0
+			val &= ~(1 << (7 - j));  		//Write 0
 		}
 		else 
         {
-            val |= (1 << (7 - j));    			//Write 1
+            val |= (1 << (7 - j));    		//Write 1
 		    while ((DHT_ReadPin(dht)));  	//Wait for the pin to go low
         }
     }
@@ -102,7 +102,7 @@ static uint8_t DHT_ConvertByteBuffer_Debug(uint8_t* buffer)
 void DHT_StartTransmission(dht_t* dht)
 {
     DHT_PinAsOutput(dht);          	//Set pin as output
-	DHT_WritePin(dht, 0);   	        //Set pin low	
+	DHT_WritePin(dht, 0);   	    //Set pin low	
     UT_Delay_MicroSeconds(2000);   	//Wait 2ms
     DHT_PinAsInput(dht);            //Set pin as input
 	UT_Delay_MicroSeconds(20);      //Wait 20us
@@ -113,11 +113,11 @@ uint8_t DHT_CheckResponse(dht_t* dht)
     uint8_t response = 1;
 	UT_Delay_MicroSeconds(40);      	//Wait 40us
 
-	if(!(DHT_ReadPin(dht)))   	//If the pin is low
+	if(!(DHT_ReadPin(dht)))   	        //If the pin is low
 	{
 		UT_Delay_MicroSeconds(80); 		//Wait 80us
 		 
-		if((DHT_ReadPin(dht))) 	//If the pin is high -> response is ok
+		if((DHT_ReadPin(dht))) 	        //If the pin is high -> response is ok
 		{
 			response = 0;
 		}			

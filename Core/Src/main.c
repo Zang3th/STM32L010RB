@@ -193,29 +193,38 @@ static void RetrieveDHT(dht_t* dht)
 		int8_t success = DHT_ReadData(dht, &humidity, &temperature);
 		if(success == 0)
 		{
-			UT_printf("\n\r%s:\n\r", dht->name);
+			UT_printf("\n\n\r%s:\n\r", dht->name);
 			UT_printf("Humidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
 			UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);	
 			LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
 			LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
 		}
 		else			
-		{
-			UT_printf("\n\rChecksum wrong!\n\r");				
-			LCD_ClearDisplay();				
+		{				
+			char buffer[32];
+			snprintf(buffer, 32, "\n%s checksum wrong!\n", dht->name);				
+			UT_PrintMsg(buffer);
+			LCD_ClearDisplay();	
+			LCD_printf("%s", dht->name);			
 			LCD_printf("Checksum wrong!");
 		}		
 	}			
 	else if(response == 1)
-	{			
-		UT_printf("\n\r%s wasn't low after 40us!", dht->name);				
-		LCD_ClearDisplay();				
+	{				
+		char buffer[32];
+		snprintf(buffer, 32, "\n%s not low 40us!\n", dht->name);				
+		UT_PrintMsg(buffer);
+		LCD_ClearDisplay();	
+		LCD_printf("%s", dht->name);		
 		LCD_printf("Not low 40us!");				
 	}			
 	else if(response == 2)
-	{
-		UT_printf("\n\r%s wasn't high after 120us!", dht->name);						
-		LCD_ClearDisplay();				
+	{		
+		char buffer[32];
+		snprintf(buffer, 32, "\n%s not high 120us!\n", dht->name);				
+		UT_PrintMsg(buffer);
+		LCD_ClearDisplay();		
+		LCD_printf("%s", dht->name);
 		LCD_printf("Not high 120us!");
 	}
 }
@@ -231,11 +240,15 @@ static void RetrieveDHT_Debug(dht_t* dht)
 	}			
 	else if(response == 1)
 	{			
-		UT_printf("\n\rSensor wasn't low after 40us!");						
+		char buffer[32];
+		snprintf(buffer, 32, "\n%s not low 40us!\n", dht->name);				
+		UT_PrintMsg(buffer);				
 	}			
 	else if(response == 2)
 	{
-		UT_printf("\n\rSensor wasn't high after 120us!");			
+		char buffer[32];
+		snprintf(buffer, 32, "\n%s not high 120us!\n", dht->name);				
+		UT_PrintMsg(buffer);			
 	}
 }
 
@@ -278,8 +291,8 @@ int main(void)
 	while (1)
 	{				
 		RetrieveDHT(&dht_OnBoard);
-		HAL_Delay(3000);
+		HAL_Delay(4000);
 		RetrieveDHT(&dht_Extern);
-		HAL_Delay(3000);
+		HAL_Delay(4000);
 	}
 }
