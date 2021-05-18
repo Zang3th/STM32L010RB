@@ -10,9 +10,9 @@ lcd.c:55:13:set_DB2	16	static
 lcd.c:59:13:set_DB1	16	static
 lcd.c:63:13:set_DB0	16	static
 lcd.c:68:12:get_DB7	24	static
-lcd.c:77:13:sendEnable	16	static
-lcd.c:87:13:waitForBusyFlag	16	static
-lcd.c:99:13:sendCommand	8	static
+lcd.c:77:13:sendEnable	8	static
+lcd.c:86:13:waitForBusyFlag	16	static
+lcd.c:98:13:sendCommand	8	static
 lcd.c:104:13:charToByteBuffer	32	static
 lcd.c:112:13:sendByteBuffer	16	static
 lcd.c:132:6:LCD_InitPins	32	static

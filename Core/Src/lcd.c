@@ -78,9 +78,8 @@ static void sendEnable()
 {
     set_E(1);
 
-    //Wait atleast 2 ticks
-    uint32_t tick_start = HAL_GetTick();
-    while((HAL_GetTick() - tick_start) <= 2){}
+    //Wait atleast 1000us
+    UT_Delay_MicroSeconds(1000);
 
     set_E(0);
 }
@@ -101,6 +100,7 @@ static void sendCommand()
     sendEnable();
     waitForBusyFlag();
 }
+
 static void charToByteBuffer(char c)
 {
     for(uint8_t i = 0; i < 8; i++)

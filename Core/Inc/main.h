@@ -6,6 +6,7 @@
 #include "lcd.h"
 #include "dht.h"
 #include <stdio.h>
+#include "irReceive.h"
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 extern void UT_Error_Handler(char* err_msg);

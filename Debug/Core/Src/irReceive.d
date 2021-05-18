@@ -1,4 +1,4 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+Core/Src/irReceive.o: ../Core/Src/irReceive.c ../Core/Inc/irReceive.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
  ../Core/Inc/stm32l0xx_hal_conf.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h \
@@ -30,11 +30,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
- ../Core/Inc/utility.h ../Core/Inc/lcd.h ../Core/Inc/dht.h \
- ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l010xb.h \
- ../Core/Inc/irReceive.h
+ ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l010xb.h
 
-../Core/Inc/main.h:
+../Core/Inc/irReceive.h:
 
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
 
@@ -98,12 +96,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h:
 
-../Core/Inc/utility.h:
-
-../Core/Inc/lcd.h:
-
-../Core/Inc/dht.h:
-
 ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l010xb.h:
-
-../Core/Inc/irReceive.h:

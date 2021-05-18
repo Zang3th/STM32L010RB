@@ -20,6 +20,9 @@
 		Temperature sensors:
 			PA6:		Data-bus Onboard-DHT22
 			PA7:		Data-bus Extern-DHT22
+
+		IR-Receiver:
+			PA8:		Data-bus	
 */
 
 // ----- Variables ----- 
@@ -27,7 +30,8 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim21;
 UART_HandleTypeDef huart2;
-dht_t dht_OnBoard, dht_Extern;
+static dht_t dht_OnBoard, dht_Extern;
+static uint8_t irsr_counter = 0;
 
 // ----- Functions ----- 
 
@@ -196,6 +200,7 @@ static void RetrieveDHT(dht_t* dht)
 			UT_printf("\n\n\r%s:\n\r", dht->name);
 			UT_printf("Humidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
 			UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);	
+			LCD_ClearDisplay();
 			LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
 			LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
 		}
@@ -257,6 +262,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
 	//Toggle Onboard-LED (1 sec. on and 1 sec. off)
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+	//If 4 seconds elapsed -> retrieve onBoard-DHT22
+	if(irsr_counter == 4)
+	{
+		RetrieveDHT(&dht_OnBoard);
+	}		
+
+	//If 8 seconds elapsed -> retrieve extern-DHT22	
+	if(irsr_counter == 8)
+	{
+		RetrieveDHT(&dht_Extern);
+		irsr_counter = 0;
+	}
+
+	irsr_counter++;	
 }
 
 int main(void)
@@ -266,9 +286,11 @@ int main(void)
 	SystemClock_Config();
 	Port_Init();
 	MX_TIM2_Init();
-	HAL_TIM_Base_Start_IT(&htim2);	
 	MX_USART2_UART_Init();
-	MX_TIM21_Init();
+	MX_TIM21_Init();	
+
+	//Start timers
+	HAL_TIM_Base_Start_IT(&htim2);	
 	HAL_TIM_Base_Start(&htim21);
 
 	//LCD stuff
@@ -290,9 +312,6 @@ int main(void)
 
 	while (1)
 	{				
-		RetrieveDHT(&dht_OnBoard);
-		HAL_Delay(4000);
-		RetrieveDHT(&dht_Extern);
-		HAL_Delay(4000);
+
 	}
 }

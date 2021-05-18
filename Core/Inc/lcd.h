@@ -13,6 +13,7 @@ void LCD_ReturnHome();
 void LCD_TurnDisplayOn();
 void LCD_TurnDisplayOff();
 void LCD_DisplayChar(char c);
+void LCD_Print(const char* string);
 void LCD_printf(const char* format, ...);
 
 #endif
