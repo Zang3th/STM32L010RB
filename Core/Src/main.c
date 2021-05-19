@@ -23,6 +23,9 @@
 
 		IR-Receiver:
 			PA8:		Data-bus IR-Receiver	
+
+		7-Segment:
+			PC0 - PC7:	Segments	
 */
 
 // ----- Variables ----- 
@@ -265,53 +268,43 @@ static void ProcessIRSignal(uint32_t signal)
 	switch(signal)
 	{
 		case(0xFFA25D):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('1');
+			segment_Display('1');
 			break;
 
 		case (0xFF629D):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('2');
+			segment_Display('2');
 			break;			
 
 		case (0xFFE21D):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('3');
+			segment_Display('3');
 			break;
 
 		case (0xFF22DD):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('4');
+			segment_Display('4');
 			break;
 
 		case (0xFF02FD):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('5');
+			segment_Display('5');
 			break;
 
 		case (0xFFC23D):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('6');
+			segment_Display('6');
 			break;
 
 		case (0xFFE01F):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('7');
+			segment_Display('7');
 			break;
 
 		case (0xFFA857):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('8');
+			segment_Display('8');
 			break;
 
 		case (0xFF906F):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('9');
+			segment_Display('9');
 			break;
 
 		case (0xFF9867):
-			LCD_ClearDisplay();
-			LCD_DisplayChar('0');
+			segment_Display('0');
 			break;
 
 		default:
@@ -376,6 +369,10 @@ int main(void)
 	ir.port = GPIOA;
 	ir.pin = GPIO_PIN_8;
 	IR_Init(&ir);
+
+	//7-Segment stuff
+	segment_Init();
+	segment_Reset();
 
 	while (1)
 	{				
