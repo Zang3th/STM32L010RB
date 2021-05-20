@@ -22,7 +22,8 @@
 			PA7:		Data-bus Extern-DHT22
 
 		IR-Receiver:
-			PA8:		Data-bus IR-Receiver	
+			PA8:		External interrupt trigger
+			PA9:		Data-bus IR-Receiver	
 
 		7-Segment:
 			PC0 - PC7:	Segments	
@@ -36,6 +37,7 @@ UART_HandleTypeDef huart2;
 static dht_t dht_OnBoard, dht_Extern;
 static uint8_t irsr_counter = 0;
 static irReceiver_t ir;
+static uint8_t pendingEXTI = 0;
 
 // ----- Functions ----- 
 
@@ -189,6 +191,20 @@ static void Port_Init(void)
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
+static void Port_As_Interrupt_Triggered(GPIO_TypeDef* port, uint16_t pin)
+{
+	//Create init struct
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+	GPIO_InitStruct.Pin = pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(port, &GPIO_InitStruct);
+
+	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+}
+
 static void RetrieveDHT(dht_t* dht)
 {	
 	uint16_t humidity = 0, temperature = 0;
@@ -268,43 +284,43 @@ static void ProcessIRSignal(uint32_t signal)
 	switch(signal)
 	{
 		case(0xFFA25D):
-			segment_Display('1');
+			Segment_Display('1');
 			break;
 
 		case (0xFF629D):
-			segment_Display('2');
+			Segment_Display('2');
 			break;			
 
 		case (0xFFE21D):
-			segment_Display('3');
+			Segment_Display('3');
 			break;
 
 		case (0xFF22DD):
-			segment_Display('4');
+			Segment_Display('4');
 			break;
 
 		case (0xFF02FD):
-			segment_Display('5');
+			Segment_Display('5');
 			break;
 
 		case (0xFFC23D):
-			segment_Display('6');
+			Segment_Display('6');
 			break;
 
 		case (0xFFE01F):
-			segment_Display('7');
+			Segment_Display('7');
 			break;
 
 		case (0xFFA857):
-			segment_Display('8');
+			Segment_Display('8');
 			break;
 
 		case (0xFF906F):
-			segment_Display('9');
+			Segment_Display('9');
 			break;
 
 		case (0xFF9867):
-			segment_Display('0');
+			Segment_Display('0');
 			break;
 
 		default:
@@ -317,6 +333,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
 	//Toggle Onboard-LED (1 sec. on and 1 sec. off)
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	
+	//Reset external interrupt status
+	pendingEXTI = 0;
 
 	//If 4 seconds elapsed -> retrieve onBoard-DHT22
 	if(irsr_counter == 4)
@@ -332,6 +351,29 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	}
 
 	irsr_counter++;	
+}
+
+//External interrupt
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	__disable_irq();
+	UNUSED(GPIO_Pin);
+
+	//If there is no pending external interrupt
+	if(pendingEXTI == 0)
+	{
+		//Set pending external interrupt status
+		pendingEXTI = 1;
+
+		uint8_t response = IR_CheckForTransmission(&ir);
+		if(response == 0)
+		{
+			uint32_t signal = IR_ReceiveSignal(&ir);
+			ProcessIRSignal(signal);
+		}		
+	}
+	UT_Delay_MicroSeconds(10000); //To debounce remote control buttons
+	__enable_irq();
 }
 
 int main(void)
@@ -367,21 +409,16 @@ int main(void)
 
 	//IR-Receiver stuff
 	ir.port = GPIOA;
-	ir.pin = GPIO_PIN_8;
+	ir.pin = GPIO_PIN_9;	
+	Port_As_Interrupt_Triggered(GPIOA, GPIO_PIN_8);
 	IR_Init(&ir);
 
 	//7-Segment stuff
-	segment_Init();
-	segment_Reset();
+	Segment_Init();
+	Segment_Reset();
 
 	while (1)
 	{				
-		uint8_t response = IR_CheckForTransmission(&ir);
-		if(response == 0)
-    	{
-			uint32_t signal = IR_ReceiveSignal(&ir);
-			ProcessIRSignal(signal);
-			HAL_Delay(500);	
-		}
+		
 	}
 }

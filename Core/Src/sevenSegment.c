@@ -13,7 +13,7 @@
 
 // ----- Private functions ----- 
 
-void segment_Reset()
+void Segment_Reset()
 {
     HAL_GPIO_WritePin(SEGMENT_A,  GPIO_PIN_SET);
     HAL_GPIO_WritePin(SEGMENT_B,  GPIO_PIN_SET);
@@ -27,7 +27,7 @@ void segment_Reset()
 
 // ----- Public Functions -----
 
-void segment_Init()
+void Segment_Init()
 {
     //Create init struct
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -40,9 +40,9 @@ void segment_Init()
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
-void segment_Display(char character)
+void Segment_Display(char character)
 {
-    segment_Reset();
+    Segment_Reset();
 
     switch(character)
 	{

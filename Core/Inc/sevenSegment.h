@@ -3,7 +3,8 @@
 
 #include "stm32l0xx_hal.h"
 
-void segment_Init();
-void segment_Display(char character);
+void Segment_Reset();
+void Segment_Init();
+void Segment_Display(char character);
 
 #endif

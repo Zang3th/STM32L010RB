@@ -25,7 +25,7 @@ void IR_Init(irReceiver_t* ir)
 uint8_t IR_CheckForTransmission(irReceiver_t* ir)
 {
     uint8_t response = 1;
-
+ 
     if(!(IR_ReadPin(ir)))           //If the pin is low
     {
         while(!(IR_ReadPin(ir)));   //Wait for pin to go high        

@@ -42,6 +42,11 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32l0xx.s).                    */
 /******************************************************************************/
 
+void EXTI4_15_IRQHandler(void)
+{
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+}
+
 void TIM2_IRQHandler(void)
 {
   HAL_TIM_IRQHandler(&htim2);
