@@ -6,27 +6,7 @@
 		PA2:	USART_TX -> Connected to debugger
 		PA3:	USART_RX -> Connected to debugger
 		PA5: 	Onboard-LED
-		PA15:	Timer 2 PWM
-		PC13: 	Blue push button
 
-	Project specific:
-		LCD:
-			PA0: 		RS
-			PA1:		R/W
-			PB0 - PB3:	DB0 - DB3
-			PB4 - PB7: 	DB4 - DB7
-			PB8: 		E
-
-		Temperature sensors:
-			PA6:		Data-bus Onboard-DHT22
-			PA7:		Data-bus Extern-DHT22
-
-		IR-Receiver:
-			PA8:		External interrupt trigger
-			PA9:		Data-bus IR-Receiver	
-
-		7-Segment:
-			PC0 - PC7:	Segments	
 */
 
 // ----- Variables ----- 
@@ -34,10 +14,6 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim21;
 UART_HandleTypeDef huart2;
-static dht_t dht_OnBoard, dht_Extern;
-static uint8_t irsr_counter = 0;
-static irReceiver_t ir;
-static uint8_t pendingEXTI = 0;
 
 // ----- Functions ----- 
 
@@ -182,150 +158,6 @@ static void Port_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	//Initialize all Output-Pins of Port C
-	GPIO_InitStruct.Pin = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-}
-
-static void Port_As_Interrupt_Triggered(GPIO_TypeDef* port, uint16_t pin)
-{
-	//Create init struct
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	GPIO_InitStruct.Pin = pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(port, &GPIO_InitStruct);
-
-	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
-  	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-}
-
-static void RetrieveDHT(dht_t* dht)
-{	
-	uint16_t humidity = 0, temperature = 0;
-
-	DHT_StartTransmission(dht);
-	uint8_t response = DHT_CheckResponse(dht);	 
-
-	if(response == 0)
-	{
-		int8_t success = DHT_ReadData(dht, &humidity, &temperature);
-		if(success == 0)
-		{
-			UT_printf("\n\n\r%s:\n\r", dht->name);
-			UT_printf("Humidity: %d.%d%%\n\r", humidity / 10, humidity % 10);
-			UT_printf("Temperature: %d.%d\n\r", temperature / 10, temperature % 10);	
-			LCD_ClearDisplay();
-			LCD_printf("Humidity: %d.%d%%", humidity / 10, humidity % 10);
-			LCD_printf("Temp.: %d.%dC", temperature / 10, temperature % 10);
-		}
-		else			
-		{				
-			char buffer[32];
-			snprintf(buffer, 32, "\n%s checksum wrong!\n", dht->name);				
-			UT_PrintMsg(buffer);
-			LCD_ClearDisplay();	
-			LCD_printf("%s", dht->name);			
-			LCD_printf("Checksum wrong!");
-		}		
-	}			
-	else if(response == 1)
-	{				
-		char buffer[32];
-		snprintf(buffer, 32, "\n%s not low 40us!\n", dht->name);				
-		UT_PrintMsg(buffer);
-		LCD_ClearDisplay();	
-		LCD_printf("%s", dht->name);		
-		LCD_printf("Not low 40us!");				
-	}			
-	else if(response == 2)
-	{		
-		char buffer[32];
-		snprintf(buffer, 32, "\n%s not high 120us!\n", dht->name);				
-		UT_PrintMsg(buffer);
-		LCD_ClearDisplay();		
-		LCD_printf("%s", dht->name);
-		LCD_printf("Not high 120us!");
-	}
-}
-
-static void RetrieveDHT_Debug(dht_t* dht)
-{
-	DHT_StartTransmission(dht);
-	uint8_t response = DHT_CheckResponse(dht);	 
-
-	if(response == 0)
-	{
-		DHT_ReadData_Debug(dht);	
-	}			
-	else if(response == 1)
-	{			
-		char buffer[32];
-		snprintf(buffer, 32, "\n%s not low 40us!\n", dht->name);				
-		UT_PrintMsg(buffer);				
-	}			
-	else if(response == 2)
-	{
-		char buffer[32];
-		snprintf(buffer, 32, "\n%s not high 120us!\n", dht->name);				
-		UT_PrintMsg(buffer);			
-	}
-}
-
-static void ProcessIRSignal(uint32_t signal)
-{
-	UT_printf("\n\r0x%08x\n\r", signal);
-
-	switch(signal)
-	{
-		case(0xFFA25D):
-			Segment_Display('1');
-			break;
-
-		case (0xFF629D):
-			Segment_Display('2');
-			break;			
-
-		case (0xFFE21D):
-			Segment_Display('3');
-			break;
-
-		case (0xFF22DD):
-			Segment_Display('4');
-			break;
-
-		case (0xFF02FD):
-			Segment_Display('5');
-			break;
-
-		case (0xFFC23D):
-			Segment_Display('6');
-			break;
-
-		case (0xFFE01F):
-			Segment_Display('7');
-			break;
-
-		case (0xFFA857):
-			Segment_Display('8');
-			break;
-
-		case (0xFF906F):
-			Segment_Display('9');
-			break;
-
-		case (0xFF9867):
-			Segment_Display('0');
-			break;
-
-		default:
-			break;
-	}
 }
 
 //Timed interupt callback function
@@ -333,47 +165,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
 	//Toggle Onboard-LED (1 sec. on and 1 sec. off)
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	
-	//Reset external interrupt status
-	pendingEXTI = 0;
-
-	//If 4 seconds elapsed -> retrieve onBoard-DHT22
-	if(irsr_counter == 4)
-	{
-		RetrieveDHT(&dht_OnBoard);
-	}		
-
-	//If 8 seconds elapsed -> retrieve extern-DHT22	
-	if(irsr_counter == 8)
-	{
-		RetrieveDHT(&dht_Extern);
-		irsr_counter = 0;
-	}
-
-	irsr_counter++;	
-}
-
-//External interrupt
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	__disable_irq();
-	UNUSED(GPIO_Pin);
-
-	//If there is no pending external interrupt
-	if(pendingEXTI == 0)
-	{
-		//Set pending external interrupt status
-		pendingEXTI = 1;
-
-		uint8_t response = IR_CheckForTransmission(&ir);
-		if(response == 0)
-		{
-			uint32_t signal = IR_ReceiveSignal(&ir);
-			ProcessIRSignal(signal);
-		}		
-	}
-	UT_Delay_MicroSeconds(10000); //To debounce remote control buttons
-	__enable_irq();
 }
 
 int main(void)
@@ -389,33 +180,6 @@ int main(void)
 	//Start timers
 	HAL_TIM_Base_Start_IT(&htim2);	
 	HAL_TIM_Base_Start(&htim21);
-
-	//LCD stuff
-	HAL_Delay(30);
-	LCD_InitPins();
-	LCD_Set8BitMode();
-	LCD_TurnDisplayOn();
-	LCD_ClearDisplay();
-	LCD_ReturnHome();
-	
-	//DHT stuff
-	dht_OnBoard.port = GPIOA;
-	dht_OnBoard.pin = GPIO_PIN_6;
-	dht_OnBoard.name = "DHT22 - OnBoard";
-
-	dht_Extern.port = GPIOA;
-	dht_Extern.pin = GPIO_PIN_7;
-	dht_Extern.name = "DHT22 - Extern";
-
-	//IR-Receiver stuff
-	ir.port = GPIOA;
-	ir.pin = GPIO_PIN_9;	
-	Port_As_Interrupt_Triggered(GPIOA, GPIO_PIN_8);
-	IR_Init(&ir);
-
-	//7-Segment stuff
-	Segment_Init();
-	Segment_Reset();
 
 	while (1)
 	{				

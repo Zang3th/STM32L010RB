@@ -44,7 +44,7 @@ void SysTick_Handler(void)
 
 void EXTI4_15_IRQHandler(void)
 {
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+  
 }
 
 void TIM2_IRQHandler(void)
