@@ -3,9 +3,16 @@
 /* Static PIN/PORT LOOK-UP
 	
 	Always:
-		PA2:	USART_TX -> Connected to debugger
-		PA3:	USART_RX -> Connected to debugger
-		PA5: 	Onboard-LED
+		USART_TX:		PA2 		(Auto)
+		USART_RX:		PA3 		(Auto)
+
+	TFT-Display (2.4"):
+		SCK:			PA5			(Auto)
+		MISO:			PA6			(Auto)
+		MOSI:			PA7			(Auto)
+
+	LED:
+		VDD:			PB8			(X)	
 
 */
 
@@ -14,6 +21,7 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim21;
 UART_HandleTypeDef huart2;
+SPI_HandleTypeDef hspi1;
 
 // ----- Functions ----- 
 
@@ -141,6 +149,27 @@ static void MX_TIM21_Init(void)
 	}
 }
 
+static void MX_SPI1_Init(void)
+{
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; //4 MBits/s
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1.Init.CRCPolynomial = 7;
+
+	if (HAL_SPI_Init(&hspi1) != HAL_OK)
+	{
+		UT_Error_Handler("HAL_SPI_Init failed!");
+	}
+}
+
 static void Port_Init(void)
 {
 	//Enable GPIO Ports Clock
@@ -152,19 +181,19 @@ static void Port_Init(void)
 	//Create init struct
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-	//Initialize all Output-Pins of Port A
-	GPIO_InitStruct.Pin = GPIO_PIN_5;
+	//Initialize all Output-Pins of Port B
+	GPIO_InitStruct.Pin = GPIO_PIN_8;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
 //Timed interupt callback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {	
 	//Toggle Onboard-LED (1 sec. on and 1 sec. off)
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_8);
 }
 
 int main(void)
@@ -176,10 +205,13 @@ int main(void)
 	MX_TIM2_Init();
 	MX_USART2_UART_Init();
 	MX_TIM21_Init();	
+	MX_SPI1_Init();
 
 	//Start timers
 	HAL_TIM_Base_Start_IT(&htim2);	
 	HAL_TIM_Base_Start(&htim21);
+
+	//TFT stuff
 
 	while (1)
 	{				
