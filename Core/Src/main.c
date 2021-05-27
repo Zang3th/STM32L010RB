@@ -222,14 +222,13 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim2);	
 	HAL_TIM_Base_Start(&htim21);
 
-	//TFT stuff
+	//TFT stuff (Colors are 6-Bit, lower 2 bits are getting discarded, 0-252)
 	TFT_Init();
+	TFT_TurnDisplayOn();
+	TFT_TestDisplay(); 
 
 	while (1)
-	{				
-		TFT_TurnDisplayOff();
-		HAL_Delay(500);
-		TFT_TurnDisplayOn();
-		HAL_Delay(500);
+	{	
+
 	}
 }
