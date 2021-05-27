@@ -15,7 +15,7 @@ lcd.c:86:13:waitForBusyFlag	16	static
 lcd.c:98:13:sendCommand	8	static
 lcd.c:104:13:charToByteBuffer	32	static
 lcd.c:112:13:sendByteBuffer	16	static
-lcd.c:132:6:LCD_InitPins	32	static
+lcd.c:132:6:LCD_PortInit	32	static
 lcd.c:166:6:LCD_Set8BitMode	8	static
 lcd.c:183:6:LCD_ClearDisplay	8	static
 lcd.c:200:6:LCD_ReturnHome	8	static

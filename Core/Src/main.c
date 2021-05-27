@@ -7,9 +7,20 @@
 		USART_RX:		PA3 		(Auto)
 
 	TFT-Display (2.4"):
-		SCK:			PA5			(Auto)
-		MISO:			PA6			(Auto)
-		MOSI:			PA7			(Auto)
+		RST:			PA5
+		CS:				PA6
+		RS:				PA7
+		WR:				PA8
+		RD:				PA9
+
+		D0:				PB0
+		D1:				PB1
+		D2:				PB2
+		D3:				PB3
+		D4:				PB4
+		D5:				PB5
+		D6:				PB6
+		D7:				PB7
 
 	LED:
 		VDD:			PB8			(X)	
@@ -212,9 +223,13 @@ int main(void)
 	HAL_TIM_Base_Start(&htim21);
 
 	//TFT stuff
+	TFT_Init();
 
 	while (1)
 	{				
-		
+		TFT_TurnDisplayOff();
+		HAL_Delay(500);
+		TFT_TurnDisplayOn();
+		HAL_Delay(500);
 	}
 }

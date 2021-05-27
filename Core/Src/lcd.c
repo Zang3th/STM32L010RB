@@ -129,7 +129,7 @@ static void sendByteBuffer()
 
 // ----- Public Functions ----- 
 
-void LCD_InitPins()
+void LCD_PortInit()
 {
     //Create init struct
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
