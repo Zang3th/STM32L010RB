@@ -18,23 +18,6 @@
 
 // ----- Private functions ----- 
 
-void TFT_Reset()
-{
-    HAL_GPIO_WritePin(RST, 1);
-    HAL_GPIO_WritePin(CS, 1);
-    HAL_GPIO_WritePin(RS, 1);
-    HAL_GPIO_WritePin(WR, 1);
-    HAL_GPIO_WritePin(RD, 1);
-    HAL_GPIO_WritePin(D0, 0);
-    HAL_GPIO_WritePin(D1, 0);
-    HAL_GPIO_WritePin(D2, 0);
-    HAL_GPIO_WritePin(D3, 0);
-    HAL_GPIO_WritePin(D4, 0);
-    HAL_GPIO_WritePin(D5, 0);
-    HAL_GPIO_WritePin(D6, 0);
-    HAL_GPIO_WritePin(D7, 0);
-}
-
 void TFT_PortInit()
 {
     //Create init struct
@@ -51,6 +34,30 @@ void TFT_PortInit()
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    //Set default states
+    HAL_GPIO_WritePin(RST, 1);
+    HAL_GPIO_WritePin(CS, 1);
+    HAL_GPIO_WritePin(RS, 1);
+    HAL_GPIO_WritePin(WR, 1);
+    HAL_GPIO_WritePin(RD, 1);
+}
+
+void TFT_SendCmd(uint8_t command)
+{
+    //Begin transmission
+    HAL_GPIO_WritePin(CS, 0);
+    HAL_GPIO_WritePin(RS, 0);
+    HAL_GPIO_WritePin(WR, 0);
+
+    //Set data
+    GPIOB->BRR = 0x00ff;                //Clear lower 8 bits                (GPIO bit reset register)
+    GPIOB->BSRR = (command & 0x00ff);   //Set lower 8 bits to command       (GPIO port bit set/reset register)
+
+    //End transmission
+    HAL_GPIO_WritePin(WR, 1);
+    HAL_GPIO_WritePin(RS, 1);
+    HAL_GPIO_WritePin(CS, 1);
 }
 
 // ----- Public Functions ----- 
@@ -58,77 +65,22 @@ void TFT_PortInit()
 void TFT_Init()
 {
     TFT_PortInit();
-    TFT_Reset();
 
     //Software reset
-    HAL_GPIO_WritePin(CS, 0);   //Begin transmission
-    HAL_GPIO_WritePin(RS, 0);   //Begin writing command 
-    HAL_GPIO_WritePin(WR, 0);
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(D0, 1);   //Set data
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(WR, 1);   //Send data    
-    HAL_GPIO_WritePin(RS, 1);   //End writing command 
-    UT_Delay_MicroSeconds(20);
-    HAL_GPIO_WritePin(CS, 1);   //End transmission    
-    TFT_Reset();
-
+    TFT_SendCmd(0x01);
     HAL_Delay(50);
 
     //Exit sleep
-    HAL_GPIO_WritePin(CS, 0);   //Begin transmission
-    HAL_GPIO_WritePin(RS, 0);   //Begin writing command 
-    HAL_GPIO_WritePin(WR, 0);
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(D0, 1);   //Set data
-    HAL_GPIO_WritePin(D4, 1);   //Set data
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(WR, 1);   //Send data    
-    HAL_GPIO_WritePin(RS, 1);   //End writing command 
-    UT_Delay_MicroSeconds(20);
-    HAL_GPIO_WritePin(CS, 1);   //End transmission    
-    TFT_Reset();
-
-    HAL_Delay(50);
+    TFT_SendCmd(0x11);
+    HAL_Delay(50);   
 }
 
 void TFT_TurnDisplayOn()
 {
-    HAL_GPIO_WritePin(CS, 0);   //Begin transmission
-    HAL_GPIO_WritePin(RS, 0);   //Begin writing command 
-    HAL_GPIO_WritePin(WR, 0);
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(D0, 1);   //Set data
-    HAL_GPIO_WritePin(D3, 1);   //Set data
-    HAL_GPIO_WritePin(D5, 1);   //Set data
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(WR, 1);   //Send data    
-    HAL_GPIO_WritePin(RS, 1);   //End writing command 
-    UT_Delay_MicroSeconds(20);
-    HAL_GPIO_WritePin(CS, 1);   //End transmission    
-    TFT_Reset();
+    TFT_SendCmd(0x29);
 }
 
 void TFT_TurnDisplayOff()
 {
-    HAL_GPIO_WritePin(CS, 0);   //Begin transmission
-    HAL_GPIO_WritePin(RS, 0);   //Begin writing command 
-    HAL_GPIO_WritePin(WR, 0);
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(D3, 1);   //Set data
-    HAL_GPIO_WritePin(D5, 1);   //Set data
-    UT_Delay_MicroSeconds(20);
-
-    HAL_GPIO_WritePin(WR, 1);   //Send data    
-    HAL_GPIO_WritePin(RS, 1);   //End writing command 
-    UT_Delay_MicroSeconds(20);
-    HAL_GPIO_WritePin(CS, 1);   //End transmission    
-    TFT_Reset();
+    TFT_SendCmd(0x28);
 }

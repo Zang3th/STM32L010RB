@@ -1,5 +1,5 @@
-tft.c:21:6:TFT_Reset	8	static
-tft.c:38:6:TFT_PortInit	32	static
-tft.c:58:6:TFT_Init	8	static
-tft.c:99:6:TFT_TurnDisplayOn	8	static
-tft.c:118:6:TFT_TurnDisplayOff	8	static
+tft.c:21:6:TFT_PortInit	32	static
+tft.c:46:6:TFT_SendCmd	16	static
+tft.c:65:6:TFT_Init	8	static
+tft.c:78:6:TFT_TurnDisplayOn	8	static
+tft.c:83:6:TFT_TurnDisplayOff	8	static
