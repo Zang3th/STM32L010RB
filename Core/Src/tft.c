@@ -78,14 +78,14 @@ void TFT_SendDataWithCS(uint8_t command)
 void TFT_SendDataWithoutCS(uint8_t command)
 {
     //Begin write
-    HAL_GPIO_WritePin(WR, 0);
+    GPIOA->BRR = GPIO_PIN_8;
 
     //Set data
     GPIOB->BRR = 0x00ff;                //Clear lower 8 bits                (GPIO bit reset register)
     GPIOB->BSRR |= (command & 0x00ff);  //Set lower 8 bits to command       (GPIO port bit set/reset register)
    
     //End write
-    HAL_GPIO_WritePin(WR, 1);
+    GPIOA->BSRR = GPIO_PIN_8;
 }
 
 // ----- Public Functions ----- 

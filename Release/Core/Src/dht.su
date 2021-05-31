@@ -1,0 +1,5 @@
+dht.c:37:16:DHT_Read_Byte	24	static
+dht.c:102:6:DHT_StartTransmission	40	static
+dht.c:111:9:DHT_CheckResponse	16	static
+dht.c:134:9:DHT_ReadData	32	static
+dht.c:160:6:DHT_ReadData_Debug	80	static

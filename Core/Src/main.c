@@ -229,7 +229,10 @@ int main(void)
 	while (1)
 	{			
 		TFT_SetColor(0xff, 0x00, 0x00);
+		HAL_Delay(100);
 		TFT_SetColor(0x00, 0xff, 0x00); 
+		HAL_Delay(100);
 		TFT_SetColor(0x00, 0x00, 0xff);
+		HAL_Delay(100);
 	}
 }

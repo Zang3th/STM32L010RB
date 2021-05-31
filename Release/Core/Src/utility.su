@@ -1,0 +1,4 @@
+utility.c:3:6:UT_PrintMsg	8	static
+utility.c:8:6:UT_printf	56	static
+utility.c:20:6:UT_Error_Handler	16	static,ignoring_inline_asm
+utility.c:29:6:UT_Delay_MicroSeconds	0	static

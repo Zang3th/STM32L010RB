@@ -1,0 +1,9 @@
+lcd.c:132:6:LCD_PortInit	40	static
+lcd.c:166:6:LCD_Set8BitMode	8	static
+lcd.c:183:6:LCD_ClearDisplay	8	static
+lcd.c:200:6:LCD_ReturnHome	8	static
+lcd.c:217:6:LCD_TurnDisplayOn	8	static
+lcd.c:234:6:LCD_TurnDisplayOff	8	static
+lcd.c:251:6:LCD_DisplayChar	16	static
+lcd.c:257:6:LCD_Print	40	static
+lcd.c:282:6:LCD_printf	280	static
