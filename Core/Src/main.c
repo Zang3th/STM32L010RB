@@ -225,14 +225,22 @@ int main(void)
 	//TFT stuff (Colors are RGB565, 65K color, 16-bit/pixel)
 	TFT_Init();
 	TFT_TurnDisplayOn();
+	TFT_SetDisplayColor16(LCD_WHITE);
 	
+	uint16_t x = 0, y = 80, size = 40;
+
 	while (1)
 	{			
-		TFT_SetColor(0xff, 0x00, 0x00);
-		HAL_Delay(100);
-		TFT_SetColor(0x00, 0xff, 0x00); 
-		HAL_Delay(100);
-		TFT_SetColor(0x00, 0x00, 0xff);
-		HAL_Delay(100);
+		TFT_DrawRect(x, y, size, size, LCD_RED);
+		
+		if(x > 0)
+			TFT_DrawRect(x - 1, y, 1, size, LCD_WHITE);
+
+		if(x < 320)
+			x += 1;
+		else
+			x = 0;
+
+		HAL_Delay(5);
 	}
 }

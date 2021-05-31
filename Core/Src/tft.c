@@ -1,16 +1,5 @@
 #include "tft.h"
 
-// ----- Defines -----
-
-#define RST GPIOA, GPIO_PIN_5   //Reset
-#define CS  GPIOA, GPIO_PIN_6   //Chip select (active low)
-#define RS  GPIOA, GPIO_PIN_7   //Register select (1 := RAM data or command parameter and 0 := command)
-#define WR  GPIOA, GPIO_PIN_8   //Write (on rising edge)
-#define RD  GPIOA, GPIO_PIN_9   //Read (on rising edge)
-
-#define WIDTH  320
-#define HEIGHT 240
-
 // ----- Private functions ----- 
 
 void TFT_PortInit()
@@ -55,14 +44,13 @@ void TFT_SendCmd(uint8_t command)
     HAL_GPIO_WritePin(CS, 1);
 }
 
-void TFT_SendDataWithCS(uint8_t command)
+void TFT_SendData(uint8_t command)
 {
     //Begin transmission
     HAL_GPIO_WritePin(CS, 0);
 
     //Begin write
     HAL_GPIO_WritePin(WR, 0);
-    UT_Delay_MicroSeconds(10);
 
     //Set data
     GPIOB->BRR = 0x00ff;                //Clear lower 8 bits                (GPIO bit reset register)
@@ -75,7 +63,7 @@ void TFT_SendDataWithCS(uint8_t command)
     HAL_GPIO_WritePin(CS, 1);
 }
 
-void TFT_SendDataWithoutCS(uint8_t command)
+void TFT_SendRaw(uint8_t command)
 {
     //Begin write
     GPIOA->BRR = GPIO_PIN_8;
@@ -86,6 +74,37 @@ void TFT_SendDataWithoutCS(uint8_t command)
    
     //End write
     GPIOA->BSRR = GPIO_PIN_8;
+}
+
+uint16_t TFT_ConvToRGB565(uint8_t r, uint8_t g, uint8_t b)
+{
+    r >>= 3; //Red := Highest 5 bits
+    g >>= 2; //Green := Highest 6 bits
+    b >>= 3; //Blue := Highest 5 bits
+
+    uint8_t byte_1 = (r << 3) | (g >> 3);   
+    uint8_t byte_2 = (g & 0x07) << 5 | b;  
+
+    return (byte_1 << 8) | byte_2; 
+}
+
+void TFT_SetArea(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd)
+{
+    TFT_SendCmd(0x2a);
+    HAL_GPIO_WritePin(CS, 0); //Begin transmission
+    TFT_SendRaw(xStart >> 8);
+    TFT_SendRaw(xStart);
+    TFT_SendRaw(xEnd >> 8);
+    TFT_SendRaw(xEnd);
+    HAL_GPIO_WritePin(CS, 1); //End transmission
+
+    TFT_SendCmd(0x2b);
+    HAL_GPIO_WritePin(CS, 0); //Begin transmission
+    TFT_SendRaw(yStart >> 8);
+    TFT_SendRaw(yStart);
+    TFT_SendRaw(yEnd >> 8);
+    TFT_SendRaw(yEnd);
+    HAL_GPIO_WritePin(CS, 1); //End transmission
 }
 
 // ----- Public Functions ----- 
@@ -104,16 +123,16 @@ void TFT_Init()
 
     //Display function control
     TFT_SendCmd(0xB6);
-    TFT_SendDataWithCS(0x00); //Normal scan mode, positive polarity    
-    TFT_SendDataWithCS(0x80); //Normally white LCD, 1 frame scan cycle
+    TFT_SendData(0x00); //Normal scan mode, positive polarity    
+    TFT_SendData(0x80); //Normally white LCD, 1 frame scan cycle
 
     //Memory access control
     TFT_SendCmd(0x36);
-    TFT_SendDataWithCS(0x0A); //Set RGB
+    TFT_SendData(0x3A); //Row/Column Exchange, Vertical Refresh Order, RGB
 
     //Pixel format
     TFT_SendCmd(0x3A);
-    TFT_SendDataWithCS(0x55); //65K color: 16-bit/pixel (RGB565)
+    TFT_SendData(0x55); //65K color: 16-bit/pixel (RGB565)
 }
 
 void TFT_TurnDisplayOn()
@@ -126,29 +145,106 @@ void TFT_TurnDisplayOff()
     TFT_SendCmd(0x28);
 }
 
-void TFT_SetColor(uint8_t r, uint8_t g, uint8_t b)
+void TFT_SetDisplayColor24(uint8_t r, uint8_t g, uint8_t b)
 {
-    TFT_SendCmd(0x2C);
+    uint16_t color = TFT_ConvToRGB565(r, g, b);
 
-    r >>= 3; //Red := Highest 5 bits
-    g >>= 2; //Green := Highest 6 bits
-    b >>= 3; //Blue := Highest 5 bits
+    //Set area to cover whole display
+    TFT_SetArea(0, 0, WIDTH, HEIGHT);
 
-    uint8_t byte_1 = (r << 3) | (g >> 3);   
-    uint8_t byte_2 = (g & 0x07) << 5 | b;    
+    //Memory write
+    TFT_SendCmd(0x2C); 
 
     //Begin transmission
     HAL_GPIO_WritePin(CS, 0);
 
-    for(int i = 0; i < HEIGHT; i++)
+    for(uint16_t i = 0; i < HEIGHT; i++)
     {
-        for(int j = 0; j < WIDTH; j++)
+        for(uint16_t j = 0; j < WIDTH; j++)
         {
-            TFT_SendDataWithoutCS(byte_1);
-            TFT_SendDataWithoutCS(byte_2);
+            TFT_SendRaw(color >> 8);
+            TFT_SendRaw(color);
         }
     }
 
     //End transmission
     HAL_GPIO_WritePin(CS, 1);
+}
+
+void TFT_SetDisplayColor16(uint16_t color)
+{
+    //Set area to cover whole display
+    TFT_SetArea(0, 0, WIDTH, HEIGHT);
+
+    //Memory write
+    TFT_SendCmd(0x2C); 
+
+    //Begin transmission
+    HAL_GPIO_WritePin(CS, 0);
+
+    for(uint16_t i = 0; i < HEIGHT; i++)
+    {
+        for(uint16_t j = 0; j < WIDTH; j++)
+        {
+            TFT_SendRaw(color >> 8);
+            TFT_SendRaw(color);
+        }
+    }
+
+    //End transmission
+    HAL_GPIO_WritePin(CS, 1);
+}
+
+void TFT_TestDisplayColors()
+{
+    TFT_SetDisplayColor16(LCD_RED);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_GREEN); 
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_BLUE);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_BLACK);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_WHITE);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_GREY);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_YELLOW);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_ORANGE);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_CYAN);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_PINK);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_PURPLE);
+	HAL_Delay(500);
+}
+
+void TFT_DrawRect(uint16_t xStart, uint16_t yStart, uint16_t width, uint16_t height, uint16_t color)
+{
+    TFT_SetArea(xStart, yStart, xStart + width - 1, yStart + height - 1);
+
+    //Memory write
+    TFT_SendCmd(0x2C); 
+
+    //Begin transmission
+    HAL_GPIO_WritePin(CS, 0);
+
+    for(uint16_t i = 0; i < height; i++)
+    {
+        for(uint16_t j = 0; j < width; j++)
+        {
+            TFT_SendRaw(color >> 8);
+            TFT_SendRaw(color);
+        }
+    }
+
+    //End transmission
+    HAL_GPIO_WritePin(CS, 1);
+}
+
+void TFT_DrawPixel(uint16_t x, uint16_t y, uint16_t color)
+{
+    TFT_DrawRect(x, y, 1, 1, color);
 }
