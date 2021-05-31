@@ -1,8 +1,8 @@
 tft.c:16:6:TFT_PortInit	32	static
 tft.c:41:6:TFT_SendCmd	16	static
-tft.c:58:6:TFT_SendData	16	static
-tft.c:75:6:TFT_Init	8	static
-tft.c:96:6:TFT_TurnDisplayOn	8	static
-tft.c:101:6:TFT_TurnDisplayOff	8	static
-tft.c:106:6:TFT_SetColor	24	static
-tft.c:111:6:TFT_TestDisplay	32	static
+tft.c:58:6:TFT_SendDataWithCS	16	static
+tft.c:78:6:TFT_SendDataWithoutCS	16	static
+tft.c:93:6:TFT_Init	8	static
+tft.c:119:6:TFT_TurnDisplayOn	8	static
+tft.c:124:6:TFT_TurnDisplayOff	8	static
+tft.c:129:6:TFT_SetColor	40	static

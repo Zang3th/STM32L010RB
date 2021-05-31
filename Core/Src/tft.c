@@ -21,13 +21,13 @@ void TFT_PortInit()
 	//Initialize all Output-Pins of Port A
 	GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	//Initialize all Output-Pins of Port B
 	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     //Set default states
@@ -55,19 +55,37 @@ void TFT_SendCmd(uint8_t command)
     HAL_GPIO_WritePin(CS, 1);
 }
 
-void TFT_SendData(uint8_t command)
+void TFT_SendDataWithCS(uint8_t command)
 {
     //Begin transmission
     HAL_GPIO_WritePin(CS, 0);
+
+    //Begin write
     HAL_GPIO_WritePin(WR, 0);
+    UT_Delay_MicroSeconds(10);
 
     //Set data
     GPIOB->BRR = 0x00ff;                //Clear lower 8 bits                (GPIO bit reset register)
     GPIOB->BSRR |= (command & 0x00ff);  //Set lower 8 bits to command       (GPIO port bit set/reset register)
 
-    //End transmission
+    //End write
     HAL_GPIO_WritePin(WR, 1);
+
+    //End transmission
     HAL_GPIO_WritePin(CS, 1);
+}
+
+void TFT_SendDataWithoutCS(uint8_t command)
+{
+    //Begin write
+    HAL_GPIO_WritePin(WR, 0);
+
+    //Set data
+    GPIOB->BRR = 0x00ff;                //Clear lower 8 bits                (GPIO bit reset register)
+    GPIOB->BSRR |= (command & 0x00ff);  //Set lower 8 bits to command       (GPIO port bit set/reset register)
+   
+    //End write
+    HAL_GPIO_WritePin(WR, 1);
 }
 
 // ----- Public Functions ----- 
@@ -84,13 +102,18 @@ void TFT_Init()
     TFT_SendCmd(0x11);
     HAL_Delay(50);   
 
+    //Display function control
+    TFT_SendCmd(0xB6);
+    TFT_SendDataWithCS(0x00); //Normal scan mode, positive polarity    
+    TFT_SendDataWithCS(0x80); //Normally white LCD, 1 frame scan cycle
+
     //Memory access control
     TFT_SendCmd(0x36);
-    TFT_SendData(0x48); //Set RGB
+    TFT_SendDataWithCS(0x0A); //Set RGB
 
     //Pixel format
     TFT_SendCmd(0x3A);
-    TFT_SendData(0x66); //262K color: 18-bit/pixel (RGB666)
+    TFT_SendDataWithCS(0x55); //65K color: 16-bit/pixel (RGB565)
 }
 
 void TFT_TurnDisplayOn()
@@ -105,45 +128,27 @@ void TFT_TurnDisplayOff()
 
 void TFT_SetColor(uint8_t r, uint8_t g, uint8_t b)
 {
-
-}
-
-void TFT_TestDisplay()
-{
     TFT_SendCmd(0x2C);
 
-    //Send 3 dummy bytes
-    TFT_SendData(0x00);
-    TFT_SendData(0x00);    
-    TFT_SendData(0x00);  
+    r >>= 3; //Red := Highest 5 bits
+    g >>= 2; //Green := Highest 6 bits
+    b >>= 3; //Blue := Highest 5 bits
+
+    uint8_t byte_1 = (r << 3) | (g >> 3);   
+    uint8_t byte_2 = (g & 0x07) << 5 | b;    
+
+    //Begin transmission
+    HAL_GPIO_WritePin(CS, 0);
 
     for(int i = 0; i < HEIGHT; i++)
     {
-        for(int j = 0; j < WIDTH - 210; j++)
+        for(int j = 0; j < WIDTH; j++)
         {
-            TFT_SendData(252 & 0xfc);
-            TFT_SendData(0x00);
-            TFT_SendData(0x00);
+            TFT_SendDataWithoutCS(byte_1);
+            TFT_SendDataWithoutCS(byte_2);
         }
     }
 
-    for(int i = 0; i < HEIGHT; i++)
-    {
-        for(int j = WIDTH - 210; j < WIDTH - 110; j++)
-        {
-            TFT_SendData(0x00);
-            TFT_SendData(252 & 0xfc);
-            TFT_SendData(0x00);
-        }
-    }
-
-    for(int i = 0; i < HEIGHT; i++)
-    {
-        for(int j = WIDTH - 110; j < WIDTH; j++)
-        {
-            TFT_SendData(0x00);
-            TFT_SendData(0x00);
-            TFT_SendData(252 & 0xfc);
-        }
-    }
+    //End transmission
+    HAL_GPIO_WritePin(CS, 1);
 }

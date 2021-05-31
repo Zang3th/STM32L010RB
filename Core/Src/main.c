@@ -196,7 +196,7 @@ static void Port_Init(void)
 	GPIO_InitStruct.Pin = GPIO_PIN_8;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
@@ -222,13 +222,14 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim2);	
 	HAL_TIM_Base_Start(&htim21);
 
-	//TFT stuff (Colors are 6-Bit, lower 2 bits are getting discarded, 0-252)
+	//TFT stuff (Colors are RGB565, 65K color, 16-bit/pixel)
 	TFT_Init();
 	TFT_TurnDisplayOn();
-	TFT_TestDisplay(); 
-
+	
 	while (1)
-	{	
-
+	{			
+		TFT_SetColor(0xff, 0x00, 0x00);
+		TFT_SetColor(0x00, 0xff, 0x00); 
+		TFT_SetColor(0x00, 0x00, 0xff);
 	}
 }
