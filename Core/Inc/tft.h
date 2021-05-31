@@ -2,7 +2,10 @@
 #define TFT
 
 #include "stm32l0xx_hal.h"
-#include "utility.h"
+
+// 8-Bit parallel TFT-Driver for ILI9341
+// PA5 - PA9 --- 5-Control-Lines
+// PB0 - PB7 --- 8-Data-Lines
 
 // ----- Defines -----
 
