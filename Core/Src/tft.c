@@ -195,32 +195,6 @@ void TFT_SetDisplayColor16(uint16_t color)
     HAL_GPIO_WritePin(CS, 1);
 }
 
-void TFT_TestDisplayColors()
-{
-    TFT_SetDisplayColor16(LCD_RED);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_GREEN); 
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_BLUE);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_BLACK);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_WHITE);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_GREY);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_YELLOW);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_ORANGE);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_CYAN);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_PINK);
-	HAL_Delay(500);
-	TFT_SetDisplayColor16(LCD_PURPLE);
-	HAL_Delay(500);
-}
-
 void TFT_DrawRect(uint16_t xStart, uint16_t yStart, uint16_t width, uint16_t height, uint16_t color)
 {
     TFT_SetArea(xStart, yStart, xStart + width - 1, yStart + height - 1);
@@ -247,4 +221,61 @@ void TFT_DrawRect(uint16_t xStart, uint16_t yStart, uint16_t width, uint16_t hei
 void TFT_DrawPixel(uint16_t x, uint16_t y, uint16_t color)
 {
     TFT_DrawRect(x, y, 1, 1, color);
+}
+
+void TFT_TestDisplayColors()
+{
+    TFT_SetDisplayColor16(LCD_RED);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_GREEN); 
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_BLUE);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_BLACK);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_WHITE);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_GREY);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_YELLOW);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_ORANGE);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_CYAN);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_PINK);
+	HAL_Delay(500);
+	TFT_SetDisplayColor16(LCD_PURPLE);
+	HAL_Delay(500);
+}
+
+void TFT_TestDisplayRectangles()
+{
+    static int16_t rect1_x = 0, rect2_x = 0, rect3_x = 0;
+    static uint8_t rect1_y = 20, rect1_size = 20,
+                   rect2_y = 40, rect2_size = 40,
+                   rect3_y = 80, rect3_size = 80;
+
+    TFT_DrawRect(rect1_x, rect1_y, rect1_size, rect1_size, LCD_RED);    //Draw first    
+    TFT_DrawRect(rect1_x - 1, rect1_y, 1, rect1_size, LCD_WHITE);       //Delete first trail
+
+    TFT_DrawRect(rect2_x, rect2_y, rect2_size, rect2_size, LCD_GREEN);  //Draw second    
+    TFT_DrawRect(rect2_x - 1, rect2_y, 1, rect2_size, LCD_WHITE);       //Delete second trail
+
+    TFT_DrawRect(rect3_x, rect3_y, rect3_size, rect3_size, LCD_BLUE);   //Draw third    
+    TFT_DrawRect(rect3_x - 1, rect3_y, 1, rect3_size, LCD_WHITE);       //Delete third trail
+
+    //Move all rectangles
+    rect1_x++;
+    rect2_x++;
+    rect3_x++;
+
+    if(rect1_x > 320)
+		rect1_x = -20;
+
+    if(rect2_x > 320)
+		rect2_x = -40;
+
+    if(rect3_x > 320)
+		rect3_x = -80;
 }

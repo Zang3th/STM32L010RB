@@ -227,20 +227,9 @@ int main(void)
 	TFT_TurnDisplayOn();
 	TFT_SetDisplayColor16(LCD_WHITE);
 	
-	int16_t x = 0, y = 80, size = 40;
-
 	while (1)
 	{			
-		TFT_DrawRect(x, y, size, size, LCD_RED);
-		
-		if(x >= 0)
-			TFT_DrawRect(x - 1, y, 1, size, LCD_WHITE);
-
-		if(x <= 320)
-			x += 1;
-		else
-			x = -40;
-
-		HAL_Delay(5);
+		TFT_TestDisplayRectangles();
+		HAL_Delay(1);
 	}
 }

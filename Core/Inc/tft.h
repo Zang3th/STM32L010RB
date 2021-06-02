@@ -35,8 +35,9 @@ void TFT_TurnDisplayOn();
 void TFT_TurnDisplayOff();
 void TFT_SetDisplayColor24(uint8_t r, uint8_t g, uint8_t b);
 void TFT_SetDisplayColor16(uint16_t color);
-void TFT_TestDisplayColors();
 void TFT_DrawRect(uint16_t xStart, uint16_t yStart, uint16_t width, uint16_t height, uint16_t color);
 void TFT_DrawPixel(uint16_t x, uint16_t y, uint16_t color);
+void TFT_TestDisplayColors();
+void TFT_TestDisplayRectangles();
 
 #endif
